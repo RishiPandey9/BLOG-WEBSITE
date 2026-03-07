@@ -31,3 +31,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local API smoke test artifacts
+api-smoke-results.csv
+api-smoke-results.json

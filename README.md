@@ -106,9 +106,9 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret
 MANAGER_EMAILS=admin@example.com,you@example.com
 
 # Firebase Admin SDK
-FIREBASE_PROJECT_ID=your_project_id
-FIREBASE_CLIENT_EMAIL=your_service_account_email
-FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+FIREBASE_ADMIN_PROJECT_ID=your_project_id
+FIREBASE_ADMIN_CLIENT_EMAIL=your_service_account_email
+FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 
 # Firebase Client SDK (public)
 NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
@@ -120,6 +120,11 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 
 # Resend (optional — for email notifications)
 RESEND_API_KEY=your_resend_api_key
+
+# Razorpay (required for premium payments)
+RAZORPAY_KEY_ID=your_razorpay_key_id
+RAZORPAY_KEY_SECRET=your_razorpay_key_secret
+RAZORPAY_WEBHOOK_SECRET=your_webhook_secret
 
 # Cloudinary (required for image uploads via /api/upload)
 CLOUDINARY_CLOUD_NAME=your_cloud_name
