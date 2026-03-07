@@ -1,0 +1,114 @@
+'use client';
+
+import Link from 'next/link';
+import { BookOpen, Twitter, Github, Mail, Heart } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+export function Footer() {
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <footer className="bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-800 mt-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.1 }}
+          variants={{
+            hidden: {},
+            visible: { transition: { staggerChildren: 0.08 } },
+          }}
+          className="grid grid-cols-1 md:grid-cols-4 gap-8"
+        >
+          {/* Brand */}
+          <motion.div
+            variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+            transition={{ duration: 0.5 }}
+            className="md:col-span-2"
+          >
+            <Link href="/" className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 bg-gradient-to-br from-sky-400 to-indigo-600 rounded-lg flex items-center justify-center">
+                <BookOpen className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-xl font-bold gradient-text">DevBlog</span>
+            </Link>
+            <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm leading-relaxed">
+              A modern platform for developers to share knowledge, explore the latest in technology, and grow together as a community.
+            </p>
+            <div className="flex items-center gap-3 mt-4">
+              <a href="#" className="p-2 text-gray-400 hover:text-sky-500 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-all">
+                <Twitter className="w-4 h-4" />
+              </a>
+              <a href="#" className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all">
+                <Github className="w-4 h-4" />
+              </a>
+              <a href="#" className="p-2 text-gray-400 hover:text-sky-500 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-all">
+                <Mail className="w-4 h-4" />
+              </a>
+            </div>
+          </motion.div>
+
+          {/* Links */}
+          <motion.div
+            variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+            transition={{ duration: 0.5 }}
+          >
+            <h4 className="font-semibold text-gray-900 dark:text-white mb-4">Explore</h4>
+            <ul className="space-y-2">
+              {[
+                { label: 'All Posts', href: '/blog' },
+                { label: 'Technology', href: '/blog?category=technology' },
+                { label: 'Tutorials', href: '/blog?category=tutorial' },
+                { label: 'AI & ML', href: '/blog?category=ai-ml' },
+                { label: 'Design', href: '/blog?category=design' },
+              ].map(link => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-sm text-gray-500 dark:text-gray-400 hover:text-sky-500 dark:hover:text-sky-400 transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+
+          <motion.div
+            variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+            transition={{ duration: 0.5 }}
+          >
+            <h4 className="font-semibold text-gray-900 dark:text-white mb-4">Platform</h4>
+            <ul className="space-y-2">
+              {[
+                { label: 'Write a Post', href: '/create' },
+                { label: 'My Profile', href: '/profile' },
+                { label: 'Sign In', href: '/auth/signin' },
+                { label: 'Contact', href: '/contact' },
+                { label: 'About', href: '/about' },
+              ].map(link => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-sm text-gray-500 dark:text-gray-400 hover:text-sky-500 dark:hover:text-sky-400 transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="flex flex-col sm:flex-row items-center justify-between mt-8 pt-8 border-t border-gray-200 dark:border-gray-800"
+        >
+          <p className="text-sm text-gray-400 dark:text-gray-500">
+            © {currentYear} DevBlog. All rights reserved.
+          </p>
+          <p className="text-sm text-gray-400 dark:text-gray-500 flex items-center gap-1 mt-2 sm:mt-0">
+            Built with <Heart className="w-3 h-3 text-red-400 fill-red-400" /> using Next.js & Tailwind CSS
+          </p>
+        </motion.div>
+      </div>
+    </footer>
+  );
+}

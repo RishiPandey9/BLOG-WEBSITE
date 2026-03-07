@@ -1,0 +1,275 @@
+# DevBlog — Multi-Author Community Publishing Platform
+
+A full-featured multi-author blogging platform built with Next.js 14 (App Router), TypeScript, NextAuth.js, Tailwind CSS, and Firebase. Anyone can write and submit posts; Managers review and publish them.
+
+![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38bdf8?style=flat-square&logo=tailwind-css)
+![Firebase](https://img.shields.io/badge/Firebase-Firestore-orange?style=flat-square&logo=firebase)
+
+---
+
+## Features
+
+### Content & Discovery
+- **Blog Listing** — Search by title/tag/author, filter by category, sort, toggle grid/list view
+- **Individual Post Pages** — Parallax hero, reading progress bar, auto-generated Table of Contents, estimated reading time
+- **Tag Pages** — Dedicated `/tag/[tag]` page for every tag
+- **Trending Algorithm** — Score = `views × 0.5 + likes × 2 + comments × 3`
+- **Markdown Rendering** — Syntax-highlighted code blocks with copy-code button
+- **Related Posts** — Auto-suggested articles in the same category
+
+### Authoring & Workflow
+- **Post Status Flow** — `draft` → `pending_review` → `published` / `rejected`
+- **Create Posts** — Any authenticated user can write and submit for review
+- **Edit Posts** — Managers can inline-edit any post with live preview
+- **Author Dashboard** — Stats (posts, views, likes, comments), draft management, quick-edit
+- **Image Uploads** — Cover image uploader integrated into the post editor
+
+### Authentication & Roles
+- **OAuth** — Sign in with GitHub or Google via NextAuth.js v4
+- **RBAC** — Two roles resolved at sign-in:
+  - **Manager** — publish/reject/edit posts, moderate comments, access admin panel
+  - **Viewer** — write posts for review, comment, like, bookmark
+
+### Engagement
+- **Comments** — Submit → pending → Manager approval; sentiment analysis auto-flags toxic content
+- **Post Likes** — Per-user toggle, API-backed
+- **Bookmarks** — Saved to `localStorage`
+- **Share Buttons** — Twitter, LinkedIn, copy link
+
+### Admin Panel
+- Comment moderation (approve / reject / delete)
+- Post management (publish / unpublish / delete)
+- Comment sentiment stats dashboard
+
+### SEO & Performance
+- Dynamic `sitemap.ts` and `robots.ts`
+- JSON-LD Article structured data on every post
+- Open Graph + Twitter Card metadata per post
+- Canonical URLs
+- Skeleton loading cards for perceived performance
+- Framer Motion animations + Lenis smooth scroll (respects `prefers-reduced-motion`)
+
+---
+
+## Tech Stack
+
+| Technology | Purpose |
+|---|---|
+| Next.js 14 (App Router) | React framework, SSR & API routes |
+| TypeScript | Type safety |
+| NextAuth.js v4 | GitHub + Google OAuth, JWT sessions |
+| Tailwind CSS 3.4 | Utility-first styling, dark mode via `class` |
+| Firebase / Firestore | Persistent data store |
+| Firebase Admin SDK | Server-side Firestore access |
+| Framer Motion | Scroll animations |
+| Lenis | Smooth scroll |
+| Lucide React | Icon library |
+| React Hot Toast | Toast notifications |
+| Resend | Transactional email |
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm
+- A Firebase project with Firestore enabled
+- GitHub and/or Google OAuth app credentials
+
+### Installation
+
+```bash
+npm install
+```
+
+### Environment Variables
+
+Create a `.env.local` file in the project root:
+
+```env
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-secret-here
+
+# GitHub OAuth — https://github.com/settings/developers
+GITHUB_ID=your_github_client_id
+GITHUB_SECRET=your_github_client_secret
+
+# Google OAuth — https://console.cloud.google.com
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+# Manager emails (comma-separated) — these users get the Manager role
+MANAGER_EMAILS=admin@example.com,you@example.com
+
+# Firebase Admin SDK
+FIREBASE_PROJECT_ID=your_project_id
+FIREBASE_CLIENT_EMAIL=your_service_account_email
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+
+# Firebase Client SDK (public)
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+
+# Resend (optional — for email notifications)
+RESEND_API_KEY=your_resend_api_key
+
+# Cloudinary (required for image uploads via /api/upload)
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+```
+
+### Seed Firestore (optional)
+
+```bash
+# Populates Firestore with the static sample posts from lib/data.ts
+GET /api/seed
+```
+
+### Development
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Production Build
+
+```bash
+npm run build
+npm start
+```
+
+---
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── page.tsx                  # Home (hero, featured, categories, trending)
+│   ├── blog/
+│   │   ├── page.tsx              # Blog listing (search, filter, grid/list)
+│   │   └── [slug]/
+│   │       ├── page.tsx          # Post view (parallax, TOC, comments, likes)
+│   │       └── edit/             # Edit post (Manager only)
+│   ├── create/                   # Create new post
+│   ├── dashboard/                # Author dashboard
+│   ├── admin/                    # Admin panel (comments, posts moderation)
+│   ├── u/[username]/             # Public author profile
+│   ├── tag/[tag]/                # All posts for a tag
+│   ├── profile/                  # Signed-in user's own profile
+│   ├── bookmarks/                # Saved bookmarks page
+│   ├── contact/                  # Contact form
+│   ├── auth/signin/              # OAuth sign-in
+│   ├── auth/signup/              # Sign-up
+│   ├── api/
+│   │   ├── auth/[...nextauth]/   # NextAuth handler
+│   │   ├── posts/                # CRUD posts
+│   │   │   └── [id]/like/        # Toggle post like
+│   │   ├── comments/             # CRUD + moderate comments
+│   │   ├── bookmarks/            # Get / toggle bookmarks
+│   │   ├── upload/               # Image upload
+│   │   └── seed/                 # Seed Firestore
+│   ├── sitemap.ts                # Dynamic SEO sitemap
+│   └── robots.ts                 # robots.txt
+├── components/
+│   ├── Navbar.tsx                # Global nav
+│   ├── Hero.tsx                  # Parallax hero with floating particles
+│   ├── PostCard.tsx              # Animated post card with status badge
+│   ├── BlogContent.tsx           # Markdown renderer with copy-code buttons
+│   ├── BlogPageContent.tsx       # Blog listing client wrapper
+│   ├── CommentSection.tsx        # Full comment system
+│   ├── TableOfContents.tsx       # Auto-generated TOC from headings
+│   ├── ReadingProgressBar.tsx    # Fixed top progress bar
+│   ├── BookmarkButton.tsx        # Toggle bookmark
+│   ├── PostLikeButton.tsx        # Like / unlike a post
+│   ├── ShareButtons.tsx          # Share to Twitter, LinkedIn, copy link
+│   ├── EditPostForm.tsx          # Inline post editor with preview
+│   ├── ImageUploader.tsx         # Cover image uploader
+│   ├── SkeletonCard.tsx          # Loading skeleton
+│   ├── Footer.tsx                # Animated footer
+│   ├── Newsletter.tsx            # Newsletter signup
+│   ├── SearchBar.tsx             # Debounced search input
+│   ├── CategoryFilter.tsx        # Category pill filter
+│   └── motion.tsx                # Framer Motion reusable components
+├── hooks/
+│   └── useRole.ts                # RBAC role hook
+├── lib/
+│   ├── auth.ts                   # NextAuth config + role resolver
+│   ├── data.ts                   # Static seed data (fallback)
+│   ├── firestore.ts              # Firestore service layer
+│   ├── firebase.ts               # Firebase client SDK init
+│   ├── firebase-admin.ts         # Firebase Admin SDK init
+│   ├── posts-store.ts            # In-memory runtime post store (fallback)
+│   ├── comments.ts               # In-memory comment store (fallback)
+│   ├── sentiment.ts              # Keyword-based sentiment analysis
+│   ├── rbac.ts                   # Permission helpers
+│   ├── resend.ts                 # Email service
+│   └── utils.ts                  # cn(), formatDate(), categoryColors, …
+└── types/
+    ├── index.ts                  # All TypeScript interfaces and types
+    └── next-auth.d.ts            # NextAuth session type augmentation
+```
+
+---
+
+## Role-Based Access Control
+
+| Action | Viewer | Manager |
+|---|---|---|
+| Read published posts | ✅ | ✅ |
+| Submit post for review | ✅ | ✅ |
+| Publish / reject posts | ❌ | ✅ |
+| Edit any post | ❌ | ✅ |
+| Comment on posts | ✅ | ✅ |
+| Like / bookmark posts | ✅ | ✅ |
+| Approve / reject comments | ❌ | ✅ |
+| Access admin panel | ❌ | ✅ |
+
+Managers are determined by the `MANAGER_EMAILS` environment variable, resolved at JWT sign-in time.
+
+---
+
+## Post Status Workflow
+
+```
+[Viewer writes] → DRAFT
+      ↓ Submit for review
+   PENDING_REVIEW
+      ↓ Manager approves         ↓ Manager rejects
+   PUBLISHED                  REJECTED
+```
+
+---
+
+## License
+
+MIT
+
+---
+
+## Testing Strategy Package
+
+The repository now includes an execution-ready testing planning package:
+
+- `docs/testing/TESTING_IMPLEMENTATION_PLAN.md`
+- `docs/testing/EXECUTION_BACKLOG.md`
+- `docs/testing/COVERAGE_MATRIX.md`
+- `docs/testing/EXECUTION_TRACKER.md`
+
+Use these files together:
+
+1. Read the strategy in `docs/testing/TESTING_IMPLEMENTATION_PLAN.md`.
+2. Execute in phase order via `docs/testing/EXECUTION_BACKLOG.md`.
+3. Validate route/module/workflow scope from `docs/testing/COVERAGE_MATRIX.md`.
+4. Track progress and sign-off evidence in `docs/testing/EXECUTION_TRACKER.md`.
