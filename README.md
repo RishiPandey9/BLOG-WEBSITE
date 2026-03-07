@@ -2,6 +2,11 @@
 
 A full-featured multi-author blogging platform built with Next.js 14 (App Router), TypeScript, NextAuth.js, Tailwind CSS, and Firebase. Anyone can write and submit posts; Managers review and publish them.
 
+## Live Links
+
+- **Production App**: https://blog-website-rishi.vercel.app
+- **Blog Page**: https://blog-website-rishi.vercel.app/blog
+
 ![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38bdf8?style=flat-square&logo=tailwind-css)
@@ -131,6 +136,29 @@ CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 ```
+
+### Production OAuth Setup (Required)
+
+For production login to work, update OAuth app settings with your deployed domain.
+
+GitHub OAuth app (`https://github.com/settings/developers`):
+
+- Homepage URL: `https://blog-website-rishi.vercel.app`
+- Authorization callback URL: `https://blog-website-rishi.vercel.app/api/auth/callback/github`
+
+Google OAuth client (`https://console.cloud.google.com/apis/credentials`):
+
+- Authorized JavaScript origins:
+   - `https://blog-website-rishi.vercel.app`
+   - `http://localhost:3000`
+- Authorized redirect URIs:
+   - `https://blog-website-rishi.vercel.app/api/auth/callback/google`
+   - `http://localhost:3000/api/auth/callback/google`
+
+Ensure Vercel production env has:
+
+- `NEXTAUTH_URL=https://blog-website-rishi.vercel.app`
+- valid `GITHUB_ID`, `GITHUB_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
 
 ### Seed Firestore (optional)
 
