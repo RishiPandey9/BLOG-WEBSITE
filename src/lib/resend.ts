@@ -5,7 +5,6 @@
 
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = process.env.RESEND_FROM_EMAIL ?? 'notifications@devblog.com';
 const SITE_NAME = 'DevBlog';
 const SITE_URL = process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
@@ -14,11 +13,17 @@ function isConfigured(): boolean {
   return !!(process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 're_your_resend_api_key');
 }
 
+function getResendClient(): Resend | null {
+  if (!isConfigured()) return null;
+  return new Resend(process.env.RESEND_API_KEY);
+}
+
 // ─────────────────────────────────────────────
 // Welcome email on sign-up
 // ─────────────────────────────────────────────
 export async function sendWelcomeEmail(to: string, name: string): Promise<void> {
-  if (!isConfigured()) return;
+  const resend = getResendClient();
+  if (!resend) return;
   await resend.emails.send({
     from: FROM,
     to,
@@ -53,7 +58,8 @@ export async function sendCommentApprovedEmail(
   postTitle: string,
   postSlug: string
 ): Promise<void> {
-  if (!isConfigured()) return;
+  const resend = getResendClient();
+  if (!resend) return;
   await resend.emails.send({
     from: FROM,
     to,
@@ -80,7 +86,8 @@ export async function sendPostPublishedEmail(
   postTitle: string,
   postSlug: string
 ): Promise<void> {
-  if (!isConfigured()) return;
+  const resend = getResendClient();
+  if (!resend) return;
   await resend.emails.send({
     from: FROM,
     to,
@@ -109,7 +116,8 @@ export async function sendNewCommentEmail(
   postSlug: string,
   commentPreview: string
 ): Promise<void> {
-  if (!isConfigured()) return;
+  const resend = getResendClient();
+  if (!resend) return;
   await resend.emails.send({
     from: FROM,
     to,
@@ -138,7 +146,8 @@ export async function sendPremiumConfirmationEmail(
   name: string,
   endDate: string
 ): Promise<void> {
-  if (!isConfigured()) return;
+  const resend = getResendClient();
+  if (!resend) return;
   const formatted = new Date(endDate).toLocaleDateString('en-IN', {
     day: 'numeric', month: 'long', year: 'numeric',
   });
