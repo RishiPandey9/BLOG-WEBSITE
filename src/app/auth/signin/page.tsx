@@ -1,12 +1,22 @@
 ﻿'use client';
 
-import { signIn } from 'next-auth/react';
-import { useState } from 'react';
+import { signIn, useSession } from 'next-auth/react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { BookOpen, Github, Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 
 export default function SignInPage() {
+  const { status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.replace('/');
+    }
+  }, [status, router]);
+
   const [tab, setTab] = useState<'oauth' | 'email'>('oauth');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

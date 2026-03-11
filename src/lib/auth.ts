@@ -151,6 +151,42 @@ export const authOptions: NextAuthOptions = {
     signIn: '/auth/signin',
   },
   callbacks: {
+    async signIn({ user }) {
+      // Upsert every user into Firestore so they appear in the admin Users panel.
+      // This covers OAuth (GitHub / Google) sign-ins which bypass the signup route.
+      if (user?.email) {
+        try {
+          const { getAdminDb } = await import('@/lib/firebase-admin');
+          const adminDb = getAdminDb();
+          if (adminDb) {
+            const id = user.id ?? user.email;
+            const docRef = adminDb.collection('users').doc(id);
+            const snap = await docRef.get();
+            if (!snap.exists) {
+              await docRef.set({
+                uid: id,
+                name: user.name ?? user.email.split('@')[0],
+                email: user.email.toLowerCase(),
+                image: user.image ?? '',
+                username: user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, ''),
+                createdAt: new Date().toISOString(),
+                role: 'viewer',
+              });
+            } else {
+              // Keep name/avatar in sync with the provider
+              await docRef.set(
+                {
+                  name: user.name ?? snap.data()?.name,
+                  image: user.image ?? snap.data()?.image ?? '',
+                },
+                { merge: true }
+              );
+            }
+          }
+        } catch { /* Firestore not configured or write failed — allow sign-in anyway */ }
+      }
+      return true;
+    },
     async session({ session, token }) {
       if (session.user) {
         (session.user as { id?: string }).id = token.sub ?? (token.id as string);
