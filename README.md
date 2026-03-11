@@ -33,9 +33,13 @@ A full-featured multi-author blogging platform built with Next.js 14 (App Router
 
 ### Authentication & Roles
 - **OAuth** — Sign in with GitHub or Google via NextAuth.js v4
+- **Email / Password** — Register and sign in with credentials (Firebase Auth)
+- **Auto-redirect** — Authenticated users visiting `/auth/signin` are redirected to the homepage
 - **RBAC** — Two roles resolved at sign-in:
   - **Manager** — publish/reject/edit posts, moderate comments, access admin panel
   - **Viewer** — write posts for review, comment, like, bookmark
+- **Delegated Admin** — Managers can grant time-limited admin access to any user
+- **Firestore user sync** — Every sign-in (OAuth or credentials) automatically upserts the user into Firestore so they appear in the admin Users panel
 
 ### Engagement
 - **Comments** — Submit → pending → Manager approval; sentiment analysis auto-flags toxic content
@@ -47,6 +51,9 @@ A full-featured multi-author blogging platform built with Next.js 14 (App Router
 - Comment moderation (approve / reject / delete)
 - Post management (publish / unpublish / delete)
 - Comment sentiment stats dashboard
+- **User management** — full user list (all sign-in providers), premium status, post counts
+- **Delegated admin grants** — assign / revoke temporary admin access with expiry
+- **Revenue stats** — subscriber count, total and monthly revenue (Razorpay)
 
 ### SEO & Performance
 - Dynamic `sitemap.ts` and `robots.ts`
@@ -270,6 +277,8 @@ src/
 | Access admin panel | ❌ | ✅ |
 
 Managers are determined by the `MANAGER_EMAILS` environment variable, resolved at JWT sign-in time.
+
+A **Delegated Admin** role is also supported — Managers can grant temporary admin access to any user for a configurable duration (1h → 1 month) from the admin panel.
 
 ---
 
