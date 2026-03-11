@@ -5,17 +5,28 @@ import Link from 'next/link';
 import { useRole } from '@/hooks/useRole';
 import { formatRelativeDate } from '@/lib/utils';
 import { getSentimentEmoji, getSentimentColor } from '@/lib/sentiment';
-import { Comment, BlogPost } from '@/types';
+import { Comment, BlogPost, AdminDelegation } from '@/types';
 import {
   Shield, ShieldAlert, Users, FileText, Eye, TrendingUp,
   PenSquare, Trash2, BarChart3, Settings,
   MessageSquare, CheckCircle2, XCircle, Clock, AlertTriangle, Loader2, Star,
-  Crown, BadgeDollarSign, IndianRupee
+  Crown, BadgeDollarSign, IndianRupee, UserPlus, UserX, Timer
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function AdminPage() {
-  const { isAuthenticated, isManager, isLoading, label } = useRole();
+  const { isAuthenticated, isManager, isMainAdmin, isLoading, label } = useRole();
+
+  // Local type for the user list returned by /api/admin/users
+  type UserListEntry = {
+    email: string;
+    name: string;
+    image?: string;
+    postCount: number;
+    isPremium: boolean;
+    subscriptionEndDate?: string;
+    isAdmin: boolean;
+  };
 
   // All hooks must be called before any early returns
   const [pendingComments, setPendingComments] = useState<Comment[]>([]);
@@ -29,6 +40,20 @@ export default function AdminPage() {
     currentMonthRevenuePaise: number;
     totalPayments: number;
   } | null>(null);
+
+  // Users & Delegation state
+  const [users, setUsers] = useState<UserListEntry[]>([]);
+  const [usersLoading, setUsersLoading] = useState(true);
+  const [delegations, setDelegations] = useState<AdminDelegation[]>([]);
+  const [delegationsLoading, setDelegationsLoading] = useState(true);
+  const [userTab, setUserTab] = useState<'all' | 'subscribers' | 'admins'>('all');
+  const [showGrantModal, setShowGrantModal] = useState(false);
+  const [grantEmail, setGrantEmail] = useState('');
+  const [grantName, setGrantName] = useState('');
+  const [grantAvatar, setGrantAvatar] = useState('');
+  const [grantDuration, setGrantDuration] = useState<'1h' | '6h' | '1d' | '3d' | '1w' | '1m' | 'custom'>('1d');
+  const [grantCustomDate, setGrantCustomDate] = useState('');
+  const [grantLoading, setGrantLoading] = useState(false);
 
   const fetchCommentData = useCallback(async () => {
     try {
@@ -59,10 +84,40 @@ export default function AdminPage() {
     }
   }, []);
 
+  const fetchUsers = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/users');
+      if (res.ok) {
+        const data = await res.json() as { users: UserListEntry[] };
+        setUsers(data.users);
+      }
+    } catch (err) {
+      console.error('Failed to fetch users:', err);
+    } finally {
+      setUsersLoading(false);
+    }
+  }, []);
+
+  const fetchDelegations = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/delegations');
+      if (res.ok) {
+        const data = await res.json() as { delegations: AdminDelegation[] };
+        setDelegations(data.delegations);
+      }
+    } catch (err) {
+      console.error('Failed to fetch delegations:', err);
+    } finally {
+      setDelegationsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (isManager) {
       fetchCommentData();
       fetchAllPosts();
+      fetchUsers();
+      fetchDelegations();
       // Fetch revenue stats
       fetch('/api/subscription', { method: 'POST' })
         .then((r) => r.ok ? r.json() : null)
@@ -76,7 +131,7 @@ export default function AdminPage() {
         })
         .catch(console.error);
     }
-  }, [isManager, fetchCommentData, fetchAllPosts]);
+  }, [isManager, fetchCommentData, fetchAllPosts, fetchUsers, fetchDelegations]);
 
   const handleModerate = async (commentId: string, status: 'approved' | 'rejected') => {
     try {
@@ -163,6 +218,57 @@ export default function AdminPage() {
     }
   };
 
+  const handleGrantAdmin = async () => {
+    if (!grantEmail) { toast.error('Select a user first'); return; }
+    const now = Date.now();
+    let expiresAt: string;
+    switch (grantDuration) {
+      case '1h':  expiresAt = new Date(now + 1  * 60 * 60 * 1000).toISOString(); break;
+      case '6h':  expiresAt = new Date(now + 6  * 60 * 60 * 1000).toISOString(); break;
+      case '1d':  expiresAt = new Date(now + 1  * 24 * 60 * 60 * 1000).toISOString(); break;
+      case '3d':  expiresAt = new Date(now + 3  * 24 * 60 * 60 * 1000).toISOString(); break;
+      case '1w':  expiresAt = new Date(now + 7  * 24 * 60 * 60 * 1000).toISOString(); break;
+      case '1m':  expiresAt = new Date(now + 30 * 24 * 60 * 60 * 1000).toISOString(); break;
+      case 'custom':
+        if (!grantCustomDate) { toast.error('Pick a custom expiry date'); return; }
+        expiresAt = new Date(grantCustomDate).toISOString();
+        break;
+      default: expiresAt = new Date(now + 24 * 60 * 60 * 1000).toISOString();
+    }
+    setGrantLoading(true);
+    try {
+      const res = await fetch('/api/admin/delegations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userEmail: grantEmail, userName: grantName || grantEmail, userAvatar: grantAvatar, expiresAt }),
+      });
+      if (res.ok) {
+        toast.success(`Admin access granted to ${grantName || grantEmail} until ${new Date(expiresAt).toLocaleString()}`);
+        setShowGrantModal(false);
+        setGrantEmail(''); setGrantName(''); setGrantAvatar(''); setGrantDuration('1d'); setGrantCustomDate('');
+        fetchDelegations();
+      } else {
+        const err = await res.json() as { error?: string };
+        toast.error(err.error ?? 'Failed to grant admin access');
+      }
+    } catch { toast.error('Failed to grant admin access'); }
+    finally { setGrantLoading(false); }
+  };
+
+  const handleRevokeAdmin = async (id: string, name: string) => {
+    if (!confirm(`Revoke admin access for ${name}? They will lose admin privileges within a few minutes.`)) return;
+    try {
+      const res = await fetch(`/api/admin/delegations?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+      if (res.ok) {
+        setDelegations((prev) => prev.map((d) => d.id === id ? { ...d, isRevoked: true } : d));
+        toast.success(`Admin access revoked for ${name}`);
+      } else {
+        const err = await res.json() as { error?: string };
+        toast.error(err.error ?? 'Failed to revoke');
+      }
+    } catch { toast.error('Failed to revoke admin access'); }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen pt-24 flex items-center justify-center">
@@ -196,6 +302,22 @@ export default function AdminPage() {
   const totalViews = allPosts.reduce((sum, p) => sum + (p.views ?? 0), 0);
   const totalLikes = allPosts.reduce((sum, p) => sum + (p.likes ?? 0), 0);
   const pendingPostsCount = allPosts.filter((p) => p.status === 'pending_review').length;
+
+  const nowIso = new Date().toISOString();
+  const activeDelegations = delegations.filter((d) => !d.isRevoked && d.expiresAt > nowIso);
+
+  // Fall back to post authors when Firestore users collection is empty
+  const displayUsers: UserListEntry[] = users.length > 0
+    ? users
+    : Array.from(new Map(allPosts.map((p) => [p.author.email, {
+        email: p.author.email,
+        name: p.author.name,
+        image: p.author.avatar,
+        postCount: allPosts.filter((x) => x.author.email === p.author.email).length,
+        isPremium: false,
+        isAdmin: false,
+      }])).values());
+  const subscriberUsers = displayUsers.filter((u) => u.isPremium);
 
   const stats = [
     { label: 'Total Posts', value: allPosts.length, icon: FileText, color: 'text-sky-500 bg-sky-100 dark:bg-sky-900/30' },
@@ -497,38 +619,224 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* Users List + Quick Actions */}
+          {/* Users & Delegation Panel */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Users */}
+
+            {/* Tabbed Users / Subscribers / Delegated Admins */}
             <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
-                <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                  <Users className="w-4 h-4 text-amber-500" />
-                  Users
-                </h2>
-              </div>
-              <div className="divide-y divide-gray-100 dark:divide-gray-800">
-                {mockUsers.map((user) => (
-                  <div key={user.email} className="flex items-center gap-3 px-6 py-3">
-                    <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center text-sm">
-                      {user.avatar}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{user.name}</p>
-                      <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{user.email}</p>
-                    </div>
-                    <span
-                      className={`tag-pill text-[10px] ${
-                        user.role === 'manager'
-                          ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
-                          : 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300'
+              <div className="px-5 pt-4 pb-0 border-b border-gray-200 dark:border-gray-800">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 text-sm">
+                    <Users className="w-4 h-4 text-amber-500" />
+                    Users &amp; Access
+                  </h2>
+                  {isMainAdmin && (
+                    <button
+                      onClick={() => { setGrantEmail(''); setGrantName(''); setGrantAvatar(''); setShowGrantModal(true); }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/50 rounded-lg transition-all"
+                    >
+                      <UserPlus className="w-3.5 h-3.5" />
+                      Grant Admin
+                    </button>
+                  )}
+                </div>
+                {/* Tabs */}
+                <div className="flex">
+                  {([
+                    { id: 'all' as const, label: 'All Users' },
+                    { id: 'subscribers' as const, label: 'Subscribers' },
+                    { id: 'admins' as const, label: 'Delegated' },
+                  ]).map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setUserTab(tab.id)}
+                      className={`px-3 py-2 text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${
+                        userTab === tab.id
+                          ? 'border-amber-500 text-amber-600 dark:text-amber-400'
+                          : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                       }`}
                     >
-                      {user.role === 'manager' ? 'Manager' : 'Viewer'}
-                    </span>
-                  </div>
-                ))}
+                      {tab.label}
+                      {tab.id === 'admins' && activeDelegations.length > 0 && (
+                        <span className="ml-1 inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold bg-violet-500 text-white rounded-full">
+                          {activeDelegations.length}
+                        </span>
+                      )}
+                      {tab.id === 'subscribers' && subscriberUsers.length > 0 && (
+                        <span className="ml-1 inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold bg-amber-500 text-white rounded-full">
+                          {subscriberUsers.length}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
               </div>
+
+              {/* All Users Tab */}
+              {userTab === 'all' && (
+                <div className="divide-y divide-gray-100 dark:divide-gray-800 max-h-80 overflow-y-auto">
+                  {usersLoading ? (
+                    <div className="flex items-center justify-center py-10">
+                      <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                    </div>
+                  ) : displayUsers.length === 0 ? (
+                    <div className="text-center py-10 text-gray-400 text-sm">No users found.</div>
+                  ) : (
+                    displayUsers.map((user) => {
+                      const isDelegate = activeDelegations.some((d) => d.userEmail === user.email);
+                      return (
+                        <div key={user.email} className="flex items-center gap-3 px-4 py-3">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={user.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=6366f1&color=fff&size=32&format=png`}
+                            alt={user.name}
+                            className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{user.name}</p>
+                            <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                          </div>
+                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                            {user.isPremium && (
+                              <Crown className="w-3.5 h-3.5 text-amber-500" />
+                            )}
+                            <span className={`tag-pill text-[10px] ${
+                              user.isAdmin
+                                ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
+                                : isDelegate
+                                ? 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300'
+                                : 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300'
+                            }`}>
+                              {user.isAdmin ? 'Admin' : isDelegate ? 'Delegated' : 'Viewer'}
+                            </span>
+                            {isMainAdmin && !user.isAdmin && !isDelegate && (
+                              <button
+                                onClick={() => { setGrantEmail(user.email); setGrantName(user.name); setGrantAvatar(user.image ?? ''); setShowGrantModal(true); }}
+                                className="p-1 text-gray-300 hover:text-violet-500 dark:hover:text-violet-400 transition-colors"
+                                title="Grant temporary admin access"
+                              >
+                                <UserPlus className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+
+              {/* Subscribers Tab */}
+              {userTab === 'subscribers' && (
+                <div className="divide-y divide-gray-100 dark:divide-gray-800 max-h-80 overflow-y-auto">
+                  {usersLoading ? (
+                    <div className="flex items-center justify-center py-10">
+                      <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                    </div>
+                  ) : subscriberUsers.length === 0 ? (
+                    <div className="text-center py-10 text-gray-400 text-sm">No active premium subscribers yet.</div>
+                  ) : (
+                    subscriberUsers.map((user) => (
+                      <div key={user.email} className="flex items-center gap-3 px-4 py-3">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={user.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=f59e0b&color=fff&size=32&format=png`}
+                          alt={user.name}
+                          className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{user.name}</p>
+                          <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                        </div>
+                        <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+                          <span className="tag-pill text-[10px] bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 flex items-center gap-1">
+                            <Crown className="w-3 h-3" /> Premium
+                          </span>
+                          {user.subscriptionEndDate && (
+                            <span className="text-[10px] text-gray-400">
+                              until {new Date(user.subscriptionEndDate).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {/* Delegated Admins Tab */}
+              {userTab === 'admins' && (
+                <div className="divide-y divide-gray-100 dark:divide-gray-800 max-h-80 overflow-y-auto">
+                  {delegationsLoading ? (
+                    <div className="flex items-center justify-center py-10">
+                      <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                    </div>
+                  ) : delegations.length === 0 ? (
+                    <div className="text-center py-10">
+                      <Shield className="w-10 h-10 mx-auto text-gray-300 dark:text-gray-700 mb-2" />
+                      <p className="text-sm text-gray-400">No delegations have been created.</p>
+                      {isMainAdmin && (
+                        <button
+                          onClick={() => { setGrantEmail(''); setGrantName(''); setGrantAvatar(''); setShowGrantModal(true); }}
+                          className="mt-3 text-xs text-violet-600 dark:text-violet-400 hover:underline"
+                        >
+                          Grant your first delegation →
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    delegations.map((d) => {
+                      const isActive = !d.isRevoked && d.expiresAt > nowIso;
+                      return (
+                        <div key={d.id} className="px-4 py-3">
+                          <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center flex-shrink-0">
+                              <Shield className="w-4 h-4 text-violet-500" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="text-sm font-semibold text-gray-900 dark:text-white">{d.userName}</p>
+                                <span className={`tag-pill text-[10px] ${
+                                  isActive
+                                    ? 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300'
+                                    : d.isRevoked
+                                    ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                                    : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
+                                }`}>
+                                  {isActive ? 'Active' : d.isRevoked ? 'Revoked' : 'Expired'}
+                                </span>
+                              </div>
+                              <p className="text-xs text-gray-400 truncate">{d.userEmail}</p>
+                              <p className="text-xs text-gray-400">
+                                by <span className="text-gray-600 dark:text-gray-300">{d.grantedByName}</span>
+                              </p>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <Timer className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                                <span className={`text-[10px] ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400'}`}>
+                                  {isActive
+                                    ? `Expires ${new Date(d.expiresAt).toLocaleString()}`
+                                    : d.isRevoked
+                                    ? 'Access revoked'
+                                    : `Expired ${new Date(d.expiresAt).toLocaleString()}`}
+                                </span>
+                              </div>
+                            </div>
+                            {isMainAdmin && isActive && (
+                              <button
+                                onClick={() => handleRevokeAdmin(d.id, d.userName)}
+                                className="p-1.5 text-gray-300 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all flex-shrink-0"
+                                title="Revoke admin access"
+                              >
+                                <UserX className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Quick Actions */}
@@ -570,9 +878,15 @@ export default function AdminPage() {
               </h3>
               <div className="space-y-3 text-xs">
                 <div>
-                  <span className="font-semibold text-amber-700 dark:text-amber-400">Manager</span>
+                  <span className="font-semibold text-amber-700 dark:text-amber-400">Admin (Permanent)</span>
                   <p className="text-amber-600/80 dark:text-amber-400/60 mt-0.5">
-                    Create, edit, delete & publish posts. Manage users. Moderate comments. Access admin panel.
+                    Full control. Can grant &amp; revoke delegated admin access. Set via MANAGER_EMAILS env var.
+                  </p>
+                </div>
+                <div className="border-t border-amber-200 dark:border-amber-800/50 pt-3">
+                  <span className="font-semibold text-violet-700 dark:text-violet-400">Delegated Admin</span>
+                  <p className="text-amber-600/80 dark:text-amber-400/60 mt-0.5">
+                    Temporary admin access with expiry. Can manage posts &amp; moderate comments. Cannot create other admins.
                   </p>
                 </div>
                 <div className="border-t border-amber-200 dark:border-amber-800/50 pt-3">
@@ -585,6 +899,139 @@ export default function AdminPage() {
             </div>
           </div>
         </div>
+
+        {/* ── Grant Admin Modal ──────────────────────────────── */}
+        {showGrantModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-md">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800">
+                <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <UserPlus className="w-4 h-4 text-violet-500" />
+                  Grant Temporary Admin Access
+                </h2>
+                <button
+                  onClick={() => setShowGrantModal(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors text-lg leading-none"
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="p-6 space-y-5">
+                {/* User email */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    User email
+                  </label>
+                  {displayUsers.length > 0 ? (
+                    <select
+                      value={grantEmail}
+                      onChange={(e) => {
+                        const selected = displayUsers.find((u) => u.email === e.target.value);
+                        setGrantEmail(e.target.value);
+                        setGrantName(selected?.name ?? '');
+                        setGrantAvatar(selected?.image ?? '');
+                      }}
+                      className="input-field w-full text-sm"
+                    >
+                      <option value="">-- Select a user --</option>
+                      {displayUsers.filter((u) => !u.isAdmin).map((u) => (
+                        <option key={u.email} value={u.email}>{u.name} ({u.email})</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="email"
+                      value={grantEmail}
+                      onChange={(e) => setGrantEmail(e.target.value)}
+                      placeholder="user@example.com"
+                      className="input-field w-full text-sm"
+                    />
+                  )}
+                  {grantEmail && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Granting to: <strong>{grantName || grantEmail}</strong></p>
+                  )}
+                </div>
+
+                {/* Duration */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    Access duration
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {([
+                      { id: '1h',  label: '1 Hour' },
+                      { id: '6h',  label: '6 Hours' },
+                      { id: '1d',  label: '1 Day' },
+                      { id: '3d',  label: '3 Days' },
+                      { id: '1w',  label: '1 Week' },
+                      { id: '1m',  label: '1 Month' },
+                    ] as const).map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setGrantDuration(opt.id)}
+                        className={`px-3 py-2 text-xs font-medium rounded-lg border transition-all ${
+                          grantDuration === opt.id
+                            ? 'bg-violet-600 text-white border-violet-600'
+                            : 'bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-violet-400'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setGrantDuration('custom')}
+                    className={`mt-2 w-full px-3 py-2 text-xs font-medium rounded-lg border transition-all ${
+                      grantDuration === 'custom'
+                        ? 'bg-violet-600 text-white border-violet-600'
+                        : 'bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-violet-400'
+                    }`}
+                  >
+                    Custom date &amp; time
+                  </button>
+                  {grantDuration === 'custom' && (
+                    <input
+                      type="datetime-local"
+                      value={grantCustomDate}
+                      onChange={(e) => setGrantCustomDate(e.target.value)}
+                      min={new Date(Date.now() + 60000).toISOString().slice(0, 16)}
+                      className="input-field w-full text-sm mt-2"
+                    />
+                  )}
+                </div>
+
+                {/* Security note */}
+                <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/40 rounded-xl">
+                  <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-700 dark:text-amber-400">
+                    The delegated admin will be able to publish posts and moderate comments, but <strong>cannot</strong> grant admin access to others. Only you can revoke this access.
+                  </p>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3 pt-1">
+                  <button
+                    onClick={() => setShowGrantModal(false)}
+                    className="flex-1 py-2.5 text-sm font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleGrantAdmin}
+                    disabled={!grantEmail || grantLoading}
+                    className="flex-1 py-2.5 text-sm font-semibold bg-violet-600 hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl transition-all flex items-center justify-center gap-2"
+                  >
+                    {grantLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
+                    Grant Access
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

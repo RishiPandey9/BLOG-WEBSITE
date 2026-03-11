@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { type UserRole } from '@/types';
-import { hasPermission, isManager, isViewer, getRoleLabel, getRoleBadgeColor } from '@/lib/rbac';
+import { hasPermission, isManager, isMainAdmin, isDelegatedAdmin, isViewer, getRoleLabel, getRoleBadgeColor } from '@/lib/rbac';
 import type { Permission } from '@/types';
 
 /**
@@ -15,7 +15,12 @@ export function useRole() {
 
   return {
     role,
+    /** True for both permanent admins and delegated admins */
     isManager: isManager(role),
+    /** True only for permanent admins (email in MANAGER_EMAILS) */
+    isMainAdmin: isMainAdmin(role),
+    /** True only for time-limited delegated admins */
+    isDelegatedAdmin: isDelegatedAdmin(role),
     isViewer: isViewer(role),
     isAuthenticated: !!session,
     isLoading: status === 'loading',

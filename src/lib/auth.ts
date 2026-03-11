@@ -3,7 +3,7 @@ import GitHubProvider from 'next-auth/providers/github';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import type { UserRole } from '@/types';
-import { getSubscriptionFromFirestore } from './firestore';
+import { getSubscriptionFromFirestore, getActiveDelegationByEmail } from './firestore';
 
 /**
  * Manager emails — loaded from MANAGER_EMAILS env var (comma-separated).
@@ -15,9 +15,16 @@ const MANAGER_EMAILS: string[] = (process.env.MANAGER_EMAILS ?? '')
   .map((e) => e.trim().toLowerCase())
   .filter(Boolean);
 
-function resolveRole(email?: string | null): UserRole {
+async function resolveRole(email?: string | null): Promise<UserRole> {
   if (email && MANAGER_EMAILS.includes(email.toLowerCase())) {
     return 'manager';
+  }
+  // Check for a time-limited delegated admin grant
+  if (email) {
+    try {
+      const delegation = await getActiveDelegationByEmail(email);
+      if (delegation) return 'delegated_admin';
+    } catch { /* silent — fall through to viewer */ }
   }
   return 'viewer';
 }
@@ -160,7 +167,7 @@ export const authOptions: NextAuthOptions = {
       // Initial sign-in — always resolve from Firestore
       if (user) {
         token.id   = user.id;
-        token.role = resolveRole(user.email);
+        token.role = await resolveRole(user.email);
         const sub  = await resolveSubscription(user.email);
         token.isPremium           = sub.isPremium;
         token.subscriptionStatus  = sub.subscriptionStatus;
@@ -171,10 +178,14 @@ export const authOptions: NextAuthOptions = {
       // Forced update (called after payment success via session.update())
       const needsRefresh =
         trigger === 'update' ||
+        // Always re-check delegation status so revocations / expiry take effect within 5 min
+        token.role === 'delegated_admin' ||
         !token.subCheckedAt ||
         Date.now() - (token.subCheckedAt as number) > SUB_REFRESH_MS;
 
       if (!user && needsRefresh && token.email) {
+        // Re-resolve role so delegations + revocations are reflected promptly
+        token.role = await resolveRole(token.email as string);
         const sub = await resolveSubscription(token.email as string);
         token.isPremium           = sub.isPremium;
         token.subscriptionStatus  = sub.subscriptionStatus;

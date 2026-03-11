@@ -5,7 +5,7 @@
  */
 
 import { getAdminDb } from './firebase-admin';
-import type { BlogPost, Comment, CommentStatus, Subscription, PaymentRecord } from '@/types';
+import type { BlogPost, Comment, CommentStatus, Subscription, PaymentRecord, AdminDelegation } from '@/types';
 import { analyzeSentiment } from './sentiment';
 import { posts as staticPosts, categories as staticCategories } from './data';
 import { getRuntimePosts } from './posts-store';
@@ -410,5 +410,112 @@ export async function getRevenueStats(): Promise<RevenueStats> {
   }
 }
 
+// ─────────────────────────────────────────────────────────
+// ADMIN DELEGATIONS
+// Collection: adminDelegations/{id}
+// ─────────────────────────────────────────────────────────
 
+/** Returns the first active (non-revoked, non-expired) delegation for a user email. */
+export async function getActiveDelegationByEmail(userEmail: string): Promise<AdminDelegation | null> {
+  if (!isDbReady() || !userEmail) return null;
+  try {
+    const now = new Date().toISOString();
+    const snap = await getAdminDb()!
+      .collection('adminDelegations')
+      .where('userEmail', '==', userEmail.toLowerCase())
+      .where('isRevoked', '==', false)
+      .get();
+    // Filter in-memory for expiresAt > now (Firestore doesn't do string range + equality in one query without a composite index)
+    const active = snap.docs
+      .map((d) => ({ id: d.id, ...d.data() } as AdminDelegation))
+      .find((d) => d.expiresAt > now);
+    return active ?? null;
+  } catch {
+    return null;
+  }
+}
 
+/** Returns all delegations (active, expired, revoked) ordered by createdAt desc. */
+export async function getAllDelegationsFromFirestore(): Promise<AdminDelegation[]> {
+  if (!isDbReady()) return [];
+  try {
+    const snap = await getAdminDb()!
+      .collection('adminDelegations')
+      .orderBy('createdAt', 'desc')
+      .get();
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as AdminDelegation));
+  } catch {
+    return [];
+  }
+}
+
+/** Creates a new admin delegation. Returns the new document id. */
+export async function createDelegationInFirestore(data: Omit<AdminDelegation, 'id'>): Promise<string> {
+  if (!isDbReady()) throw new Error('Firebase not configured');
+  const ref = await getAdminDb()!.collection('adminDelegations').add({ ...data });
+  return ref.id;
+}
+
+/** Marks a delegation as revoked. */
+export async function revokeDelegationInFirestore(id: string): Promise<void> {
+  if (!isDbReady()) throw new Error('Firebase not configured');
+  await getAdminDb()!.collection('adminDelegations').doc(id).update({ isRevoked: true });
+}
+
+// ─────────────────────────────────────────────────────────
+// USERS (for admin panel)
+// Collection: users/{id}  (created by NextAuth FirestoreAdapter)
+// ─────────────────────────────────────────────────────────
+
+export interface UserListEntry {
+  email: string;
+  name: string;
+  image?: string;
+  createdAt?: string;
+  postCount: number;
+  isPremium: boolean;
+  subscriptionEndDate?: string;
+}
+
+/**
+ * Returns users from the NextAuth `users` collection joined with subscription status.
+ * Falls back to an empty array when Firestore is not configured.
+ */
+export async function getAllUsersForAdmin(): Promise<UserListEntry[]> {
+  if (!isDbReady()) return [];
+  try {
+    const [usersSnap, subsSnap] = await Promise.all([
+      getAdminDb()!.collection('users').orderBy('createdAt', 'desc').limit(500).get(),
+      getAdminDb()!.collection('subscriptions').where('subscriptionStatus', '==', 'ACTIVE').get(),
+    ]);
+
+    const now = new Date().toISOString();
+    const premiumMap = new Map<string, string>(); // email → subscriptionEndDate
+    subsSnap.docs.forEach((d) => {
+      const data = d.data() as Subscription;
+      if (data.subscriptionEndDate > now) {
+        premiumMap.set((data.userEmail ?? d.id).toLowerCase(), data.subscriptionEndDate);
+      }
+    });
+
+    return usersSnap.docs
+      .map((d) => {
+        const data = d.data();
+        const email = (data.email ?? '').toLowerCase();
+        if (!email) return null;
+        const entry: UserListEntry = {
+          email,
+          name: data.name ?? data.displayName ?? email,
+          image: data.image ?? data.photoUrl ?? '',
+          createdAt: data.createdAt ?? '',
+          postCount: 0, // filled in by API route
+          isPremium: premiumMap.has(email),
+          subscriptionEndDate: premiumMap.get(email),
+        };
+        return entry;
+      })
+      .filter((u): u is UserListEntry => u !== null);
+  } catch {
+    return [];
+  }
+}

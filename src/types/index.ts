@@ -97,7 +97,7 @@ export interface Comment {
   moderatedAt?: string;        // when it was moderated
 }
 
-export type UserRole = 'manager' | 'viewer';
+export type UserRole = 'manager' | 'delegated_admin' | 'viewer';
 
 // ─── Extended User / Author Profile ──────────────────────────────────────────
 export interface UserProfile {
@@ -176,14 +176,40 @@ export interface Report {
   resolvedAt?: string;
 }
 
+// ─── Admin Delegation ──────────────────────────────────────────────────────
+export interface AdminDelegation {
+  id: string;
+  userEmail: string;
+  userName: string;
+  userAvatar?: string;
+  grantedBy: string;       // main admin email
+  grantedByName: string;
+  expiresAt: string;       // ISO datetime
+  createdAt: string;
+  isRevoked: boolean;
+}
+
 /**
  * RBAC Permissions
  *
- * Manager: Can create, edit, delete posts, manage users, access admin panel
- * Viewer:  Can read posts, comment, like, bookmark, submit for review
+ * Manager:          Full control. Only permanent admins can grant/revoke delegations.
+ * Delegated Admin:  Same as manager except cannot grant or revoke admin access.
+ * Viewer:           Can read posts, comment, like, bookmark, submit for review.
  */
 export const ROLE_PERMISSIONS = {
   manager: [
+    'post:create',
+    'post:edit',
+    'post:delete',
+    'post:publish',
+    'user:manage',
+    'comment:moderate',
+    'admin:access',
+    'report:resolve',
+    'user:ban',
+    'admin:grant',
+  ],
+  delegated_admin: [
     'post:create',
     'post:edit',
     'post:delete',
