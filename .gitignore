@@ -25,12 +25,21 @@ yarn-error.log*
 # local env files
 .env*.local
 
+# production env files (contain real secrets)
+.env.example
+.env.production
+.env.vercel.*
+.env.*.production
+
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# AI editor local config
+.claude/
 
 # local API smoke test artifacts
 api-smoke-results.csv
