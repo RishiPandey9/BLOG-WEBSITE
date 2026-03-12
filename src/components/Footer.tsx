@@ -32,18 +32,18 @@ export function Footer() {
               </div>
               <span className="text-xl font-bold gradient-text">DevBlog</span>
             </Link>
-            <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm leading-relaxed">
+            <p className="text-sm text-gray-600 dark:text-gray-600 max-w-sm leading-relaxed">
               A modern platform for developers to share knowledge, explore the latest in technology, and grow together as a community.
             </p>
             <div className="flex items-center gap-3 mt-4">
-              <a href="#" className="p-2 text-gray-400 hover:text-sky-500 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-all">
-                <Twitter className="w-4 h-4" />
+              <a href="#" aria-label="Follow DevBlog on Twitter" className="p-2 text-gray-600 dark:text-gray-300 hover:text-sky-500 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-all">
+                <Twitter className="w-4 h-4" aria-hidden="true" />
               </a>
-              <a href="#" className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all">
-                <Github className="w-4 h-4" />
+              <a href="#" aria-label="View DevBlog on GitHub" className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all">
+                <Github className="w-4 h-4" aria-hidden="true" />
               </a>
-              <a href="#" className="p-2 text-gray-400 hover:text-sky-500 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-all">
-                <Mail className="w-4 h-4" />
+              <a href="/contact" aria-label="Contact DevBlog by email" className="p-2 text-gray-600 dark:text-gray-300 hover:text-sky-500 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-all">
+                <Mail className="w-4 h-4" aria-hidden="true" />
               </a>
             </div>
           </motion.div>
@@ -63,7 +63,7 @@ export function Footer() {
                 { label: 'Design', href: '/blog?category=design' },
               ].map(link => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-gray-500 dark:text-gray-400 hover:text-sky-500 dark:hover:text-sky-400 transition-colors">
+                  <Link href={link.href} className="text-sm text-gray-600 dark:text-gray-600 hover:text-sky-500 dark:hover:text-sky-400 transition-colors">
                     {link.label}
                   </Link>
                 </li>
@@ -85,7 +85,7 @@ export function Footer() {
                 { label: 'About', href: '/about' },
               ].map(link => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-gray-500 dark:text-gray-400 hover:text-sky-500 dark:hover:text-sky-400 transition-colors">
+                  <Link href={link.href} className="text-sm text-gray-600 dark:text-gray-600 hover:text-sky-500 dark:hover:text-sky-400 transition-colors">
                     {link.label}
                   </Link>
                 </li>
@@ -101,11 +101,11 @@ export function Footer() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="flex flex-col sm:flex-row items-center justify-between mt-8 pt-8 border-t border-gray-200 dark:border-gray-800"
         >
-          <p className="text-sm text-gray-400 dark:text-gray-500">
+          <p className="text-sm text-gray-600 dark:text-gray-600">
             © {currentYear} DevBlog. All rights reserved.
           </p>
-          <p className="text-sm text-gray-400 dark:text-gray-500 flex items-center gap-1 mt-2 sm:mt-0">
-            Built with <Heart className="w-3 h-3 text-red-400 fill-red-400" /> using Next.js & Tailwind CSS
+          <p className="text-sm text-gray-600 dark:text-gray-600 flex items-center gap-1 mt-2 sm:mt-0">
+            Made with <Heart className="w-3 h-3 text-red-500 fill-red-500" aria-hidden="true" /> by Rishi Pandey
           </p>
         </motion.div>
       </div>

@@ -54,7 +54,7 @@ export default function BookmarksPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Saved Posts</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-gray-600 dark:text-gray-600">
               {isLoaded
                 ? bookmarkedPosts.length === 0
                   ? 'No saved posts yet'
@@ -68,7 +68,7 @@ export default function BookmarksPage() {
           <div className="text-center py-20 bg-gray-50 dark:bg-gray-900/50 rounded-2xl">
             <Bookmark className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-700 mb-4" />
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No bookmarks yet</h2>
-            <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-sm mx-auto">
+            <p className="text-gray-600 dark:text-gray-600 mb-6 max-w-sm mx-auto">
               Click the <strong>Save</strong> button on any post to bookmark it for later reading.
             </p>
             <Link href="/blog" className="btn-primary">

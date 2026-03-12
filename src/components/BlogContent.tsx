@@ -96,7 +96,7 @@ export function BlogContent({ content }: BlogContentProps) {
             </ol>
           ),
           blockquote: ({ children }) => (
-            <blockquote className="border-l-4 border-sky-500 bg-sky-50 dark:bg-sky-900/10 pl-4 py-2 my-6 italic text-gray-600 dark:text-gray-400 rounded-r-lg">
+            <blockquote className="border-l-4 border-sky-500 bg-sky-50 dark:bg-sky-900/10 pl-4 py-2 my-6 italic text-gray-600 dark:text-gray-600 rounded-r-lg">
               {children}
             </blockquote>
           ),

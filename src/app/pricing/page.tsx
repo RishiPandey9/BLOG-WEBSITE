@@ -56,7 +56,7 @@ export default function PricingPage() {
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-4">
             Unlock <span className="gradient-text">every story</span>
           </h1>
-          <p className="text-lg text-gray-500 dark:text-gray-400 max-w-xl mx-auto">
+          <p className="text-lg text-gray-600 dark:text-gray-600 max-w-xl mx-auto">
             Support independent writers and get unlimited access to all premium articles for one low monthly price.
           </p>
         </div>
@@ -66,21 +66,21 @@ export default function PricingPage() {
           {/* Free */}
           <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-8">
             <div className="flex items-center gap-2 mb-2">
-              <Users className="h-5 w-5 text-gray-400" />
-              <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Free</span>
+              <Users className="h-5 w-5 text-gray-600" />
+              <span className="text-sm font-semibold text-gray-600 dark:text-gray-600 uppercase tracking-wide">Free</span>
             </div>
             <div className="flex items-end gap-1 mb-6">
               <span className="text-5xl font-extrabold text-gray-900 dark:text-white">$0</span>
-              <span className="text-gray-400 mb-2">/month</span>
+              <span className="text-gray-600 mb-2">/month</span>
             </div>
             <ul className="space-y-3 mb-8">
               {FREE_FEATURES.map((f) => (
-                <li key={f} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                  <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-gray-400" />
+                <li key={f} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-600">
+                  <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-gray-600" />
                   {f}
                 </li>
               ))}
-              <li className="flex items-center gap-2 text-sm text-gray-400 line-through">
+              <li className="flex items-center gap-2 text-sm text-gray-600 line-through">
                 <Lock className="h-4 w-4 flex-shrink-0" />
                 Premium articles
               </li>
@@ -106,7 +106,7 @@ export default function PricingPage() {
             </div>
             <div className="flex items-end gap-1 mb-6">
               <span className="text-5xl font-extrabold text-gray-900 dark:text-white">$5</span>
-              <span className="text-gray-500 dark:text-gray-400 mb-2">/month</span>
+              <span className="text-gray-600 dark:text-gray-600 mb-2">/month</span>
             </div>
             <ul className="space-y-3 mb-8">
               {PREMIUM_FEATURES.map((f) => (
@@ -117,7 +117,7 @@ export default function PricingPage() {
               ))}
             </ul>
             <PremiumCTA />
-            <p className="mt-3 text-center text-xs text-gray-400">
+            <p className="mt-3 text-center text-xs text-gray-600">
               Cancel anytime · Instant access · Secure payment
             </p>
           </div>
@@ -137,7 +137,7 @@ export default function PricingPage() {
                   <Icon className="w-5 h-5" />
                 </div>
                 <h3 className="font-bold text-gray-900 dark:text-white mb-2">{title}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{desc}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-600">{desc}</p>
               </div>
             ))}
           </div>
@@ -150,7 +150,7 @@ export default function PricingPage() {
             {faqs.map(({ q, a }) => (
               <div key={q} className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{q}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{a}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-600">{a}</p>
               </div>
             ))}
           </div>

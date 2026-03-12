@@ -53,7 +53,7 @@ export default function ContactPage() {
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-4">
             Contact <span className="gradient-text">Us</span>
           </h1>
-          <p className="text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-600 dark:text-gray-600 max-w-2xl mx-auto">
             Have a question, suggestion, or just want to say hello? We&apos;d love to hear from you.
           </p>
         </motion.div>
@@ -114,7 +114,7 @@ export default function ContactPage() {
                   <card.icon className={`w-5 h-5 ${card.iconColor}`} />
                 </div>
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{card.title}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{card.desc}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-600">{card.desc}</p>
                 {card.href ? (
                   <a href={card.href} className={`text-sm font-medium ${card.linkColor} mt-2 inline-block transition-colors`}>
                     {card.value}

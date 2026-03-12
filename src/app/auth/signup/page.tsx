@@ -76,7 +76,7 @@ export default function SignUpPage() {
               </div>
             </Link>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create an Account</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-sm text-gray-600 dark:text-gray-600 mt-1">
               Join the community — write, comment, and connect with readers
             </p>
           </div>
@@ -105,7 +105,7 @@ export default function SignUpPage() {
               <div className="w-full border-t border-gray-200 dark:border-gray-700" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-white dark:bg-gray-900 px-3 text-gray-400 dark:text-gray-500">
+              <span className="bg-white dark:bg-gray-900 px-3 text-gray-600 dark:text-gray-600">
                 or sign up with email
               </span>
             </div>
@@ -118,7 +118,7 @@ export default function SignUpPage() {
                 Full Name
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
                 <input
                   type="text"
                   value={name}
@@ -134,7 +134,7 @@ export default function SignUpPage() {
                 Email
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
                 <input
                   type="email"
                   value={email}
@@ -148,10 +148,10 @@ export default function SignUpPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                 Password
-                <span className="text-gray-400 font-normal ml-1.5">(min. 6 characters)</span>
+                <span className="text-gray-600 font-normal ml-1.5">(min. 6 characters)</span>
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
@@ -164,7 +164,7 @@ export default function SignUpPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-600"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -186,7 +186,7 @@ export default function SignUpPage() {
                     />
                   ))}
                 </div>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-600">
                   {password.length < 3 ? 'Too short' : password.length < 6 ? 'Weak' : password.length < 9 ? 'Fair' : password.length < 12 ? 'Good' : 'Strong'}
                 </p>
               </div>
@@ -200,7 +200,7 @@ export default function SignUpPage() {
               {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
               Create Account
             </button>
-            <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-center text-sm text-gray-600 dark:text-gray-600">
               Already have an account?{' '}
               <Link href="/auth/signin" className="text-sky-500 hover:text-sky-600 font-medium">
                 Sign in
@@ -208,7 +208,7 @@ export default function SignUpPage() {
             </p>
           </form>
 
-          <p className="text-xs text-gray-400 dark:text-gray-500 text-center mt-6">
+          <p className="text-xs text-gray-600 dark:text-gray-600 text-center mt-6">
             By creating an account, you agree to our Terms of Service and Privacy Policy.
           </p>
         </div>

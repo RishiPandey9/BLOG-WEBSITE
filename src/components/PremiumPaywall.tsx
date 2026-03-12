@@ -34,7 +34,7 @@ export function PremiumPaywall({ isSignedIn }: PremiumPaywallProps) {
         <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white">
           This article is for Premium members
         </h2>
-        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+        <p className="mt-2 text-sm text-gray-600 dark:text-gray-600 max-w-sm mx-auto">
           You&apos;ve read the free preview. Upgrade to unlock the full article and every other premium post on DevBlog.
         </p>
 
@@ -71,7 +71,7 @@ export function PremiumPaywall({ isSignedIn }: PremiumPaywallProps) {
           )}
         </div>
 
-        <p className="mt-4 text-xs text-gray-400 dark:text-gray-500">
+        <p className="mt-4 text-xs text-gray-600 dark:text-gray-600">
           Cancel anytime · Instant access · Secure payment
         </p>
       </div>

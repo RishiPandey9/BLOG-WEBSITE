@@ -237,11 +237,11 @@ export default function CommentSection({ postId }: CommentSectionProps) {
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
             Comments
-            <span className="ml-2 text-base font-normal text-gray-500 dark:text-gray-400">
+            <span className="ml-2 text-base font-normal text-gray-600 dark:text-gray-600">
               ({approvedComments.length})
             </span>
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-gray-600 dark:text-gray-600">
             Share your thoughts on this post
           </p>
         </div>
@@ -281,11 +281,11 @@ export default function CommentSection({ postId }: CommentSectionProps) {
                 <div className="flex items-center justify-between mt-3">
                   <div className="flex items-center gap-3">
                     {previewSentiment && (
-                      <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 animate-in fade-in">
+                      <span className="text-xs text-gray-600 dark:text-gray-600 flex items-center gap-1 animate-in fade-in">
                         {previewSentiment}
                       </span>
                     )}
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-gray-600">
                       {newComment.length}/2000
                     </span>
                     {!isManagerUser && newComment.trim().length > 0 && (
@@ -314,7 +314,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
         ) : (
           <div className="text-center py-6">
             <MessageSquare className="w-10 h-10 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
-            <p className="text-gray-500 dark:text-gray-400 mb-2">
+            <p className="text-gray-600 dark:text-gray-600 mb-2">
               Sign in to join the conversation
             </p>
             <a
@@ -399,7 +399,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
       ) : (
         <div className="text-center py-12">
           <MessageSquare className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
-          <p className="text-gray-500 dark:text-gray-400">
+          <p className="text-gray-600 dark:text-gray-600">
             No comments yet. Be the first to share your thoughts!
           </p>
         </div>
@@ -408,7 +408,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
   );
 }
 
-// ─── Individual Comment Card ──────────────────────────────
+// â”€â”€â”€ Individual Comment Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface CommentCardProps {
   comment: Comment;
@@ -456,7 +456,7 @@ function CommentCard({
             <span className="font-semibold text-sm text-gray-900 dark:text-white">
               {comment.author?.name || 'Anonymous'}
             </span>
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-gray-600">
               {formatRelativeDate(comment.createdAt)}
             </span>
 
@@ -517,7 +517,7 @@ function CommentCard({
               className={`flex items-center gap-1.5 text-xs transition-colors ${
                 hasLiked
                   ? 'text-rose-500'
-                  : 'text-gray-400 hover:text-rose-500'
+                  : 'text-gray-600 hover:text-rose-500'
               }`}
             >
               <Heart
@@ -552,7 +552,7 @@ function CommentCard({
             {isManager && (
               <button
                 onClick={() => onDelete(comment.id)}
-                className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                className="flex items-center gap-1 text-xs text-gray-600 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 Delete
@@ -561,8 +561,8 @@ function CommentCard({
 
             {/* Moderation info */}
             {comment.moderatedBy && isManager && (
-              <span className="text-xs text-gray-400 ml-auto">
-                {comment.status === 'approved' ? '✓' : '✗'} by {comment.moderatedBy}
+              <span className="text-xs text-gray-600 ml-auto">
+                {comment.status === 'approved' ? 'âœ“' : 'âœ—'} by {comment.moderatedBy}
               </span>
             )}
           </div>

@@ -31,7 +31,8 @@ export function BookmarkButton({ postId, className }: BookmarkButtonProps) {
   return (
     <button
       onClick={toggle}
-      aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark post'}
+      aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark this post'}
+      aria-pressed={bookmarked}
       className={cn(
         'btn-ghost text-sm transition-all',
         bookmarked
@@ -40,7 +41,7 @@ export function BookmarkButton({ postId, className }: BookmarkButtonProps) {
         className
       )}
     >
-      <Bookmark className={cn('w-4 h-4', bookmarked && 'fill-sky-500 dark:fill-sky-400')} />
+      <Bookmark className={cn('w-4 h-4', bookmarked && 'fill-sky-500 dark:fill-sky-400')} aria-hidden="true" />
       {bookmarked ? 'Saved' : 'Save'}
     </button>
   );

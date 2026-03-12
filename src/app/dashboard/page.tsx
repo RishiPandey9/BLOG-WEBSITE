@@ -20,7 +20,7 @@ import type { Subscription, PaymentRecord } from '@/types';
 
 const statusConfig = {
   published: { label: 'Published', color: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400', icon: CheckCircle2 },
-  draft: { label: 'Draft', color: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400', icon: Edit2 },
+  draft: { label: 'Draft', color: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-600', icon: Edit2 },
   pending_review: { label: 'In Review', color: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400', icon: AlertCircle },
   rejected: { label: 'Rejected', color: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400', icon: XCircle },
 };
@@ -28,7 +28,7 @@ const statusConfig = {
 export default function DashboardPage() {
   const { data: session } = useSession();
   const { isAuthenticated, isLoading } = useRole();
-  const [activeTab, setActiveTab] = useState<'all' | 'published' | 'draft' | 'pending_review'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'published' | 'draft' | 'pending_review' | 'analytics'>('all');
   const [myPosts, setMyPosts] = useState<BlogPost[]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -116,7 +116,7 @@ export default function DashboardPage() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen pt-24 flex flex-col items-center justify-center text-center px-4">
-        <div className="text-6xl mb-4">🔒</div>
+        <div className="text-6xl mb-4">ðŸ”’</div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Sign in to view your dashboard</h1>
         <Link href="/auth/signin" className="btn-primary mt-6">Sign In</Link>
       </div>
@@ -136,6 +136,18 @@ export default function DashboardPage() {
 
   const trendingScore = (p: BlogPost) => (p.views ?? 0) * 0.5 + (p.likes ?? 0) * 2 + (p.commentCount ?? 0) * 3;
   const topPost = myPosts.length > 0 ? [...myPosts].sort((a, b) => trendingScore(b) - trendingScore(a))[0] : null;
+
+  // Analytics helpers
+  const publishedPosts = myPosts.filter((p) => p.status === 'published');
+  const maxViews = Math.max(...publishedPosts.map((p) => p.views ?? 0), 1);
+  const maxLikes = Math.max(...publishedPosts.map((p) => p.likes ?? 0), 1);
+  const engagementRate = stats.views > 0 ? (((stats.likes + stats.comments) / stats.views) * 100).toFixed(1) : '0.0';
+  const avgViews = publishedPosts.length > 0 ? Math.round(stats.views / publishedPosts.length) : 0;
+  const categoryDist = myPosts.reduce<Record<string, number>>((acc, p) => {
+    acc[p.category] = (acc[p.category] ?? 0) + 1;
+    return acc;
+  }, {});
+  const sortedCategories = Object.entries(categoryDist).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
   return (
     <div className="min-h-screen pt-24 pb-16">
@@ -160,9 +172,9 @@ export default function DashboardPage() {
             )}
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Welcome back, {session?.user?.name?.split(' ')[0]} 👋
+                Welcome back, {session?.user?.name?.split(' ')[0]} ðŸ‘‹
               </h1>
-              <p className="text-gray-500 dark:text-gray-400 text-sm">Here&apos;s your content overview</p>
+              <p className="text-gray-600 dark:text-gray-600 text-sm">Here&apos;s your content overview</p>
             </div>
           </div>
           <Link href="/create" className="btn-primary text-sm self-start md:self-auto">
@@ -179,25 +191,26 @@ export default function DashboardPage() {
           className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-10"
         >
           {[
-            { label: 'Total Posts', value: stats.total, icon: FileText, color: 'sky' },
-            { label: 'Published', value: stats.published, icon: CheckCircle2, color: 'green' },
-            { label: 'Drafts', value: stats.drafts, icon: Edit2, color: 'amber' },
-            { label: 'Total Views', value: stats.views.toLocaleString(), icon: Eye, color: 'purple' },
-            { label: 'Total Likes', value: stats.likes.toLocaleString(), icon: Heart, color: 'red' },
-            { label: 'Comments', value: stats.comments.toLocaleString(), icon: MessageSquare, color: 'indigo' },
-          ].map(({ label, value, icon: Icon, color }, i) => (
+            { label: 'Total Posts', value: stats.total, icon: FileText, color: 'sky', sub: `${stats.published} live` },
+            { label: 'Published', value: stats.published, icon: CheckCircle2, color: 'green', sub: `${stats.drafts} drafts` },
+            { label: 'Drafts', value: stats.drafts, icon: Edit2, color: 'amber', sub: 'in progress' },
+            { label: 'Total Views', value: stats.views.toLocaleString(), icon: Eye, color: 'purple', sub: `avg ${avgViews}/post` },
+            { label: 'Total Likes', value: stats.likes.toLocaleString(), icon: Heart, color: 'red', sub: `${engagementRate}% engage` },
+            { label: 'Comments', value: stats.comments.toLocaleString(), icon: MessageSquare, color: 'indigo', sub: 'all posts' },
+          ].map(({ label, value, icon: Icon, color, sub }, i) => (
             <motion.div
               key={label}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3, delay: 0.1 + i * 0.05 }}
-              className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 text-center"
+              className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 text-center hover:shadow-md dark:hover:shadow-gray-900 transition-shadow"
             >
               <div className={`w-8 h-8 rounded-lg bg-${color}-100 dark:bg-${color}-900/30 flex items-center justify-center mx-auto mb-2`}>
                 <Icon className={`w-4 h-4 text-${color}-600 dark:text-${color}-400`} />
               </div>
               <div className="text-xl font-bold text-gray-900 dark:text-white">{value}</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{label}</div>
+              <div className="text-xs text-gray-600 dark:text-gray-600 mt-0.5">{label}</div>
+              <div className="text-xs text-gray-600 dark:text-gray-600 mt-0.5">{sub}</div>
             </motion.div>
           ))}
         </motion.div>
@@ -206,30 +219,144 @@ export default function DashboardPage() {
           {/* Post List */}
           <div className="lg:col-span-2">
             {/* Tabs */}
-            <div className="flex items-center gap-1 mb-6 bg-gray-100 dark:bg-gray-900 rounded-xl p-1 w-fit">
-              {(['all', 'published', 'draft', 'pending_review'] as const).map((tab) => (
+            <div className="flex items-center gap-1 mb-6 bg-gray-100 dark:bg-gray-900 rounded-xl p-1 w-fit overflow-x-auto">
+              {(['all', 'published', 'draft', 'pending_review', 'analytics'] as const).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={cn(
-                    'px-3 py-1.5 text-sm font-medium rounded-lg transition-all capitalize',
+                    'px-3 py-1.5 text-sm font-medium rounded-lg transition-all capitalize whitespace-nowrap',
                     activeTab === tab
                       ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                      : 'text-gray-600 dark:text-gray-600 hover:text-gray-700 dark:hover:text-gray-200'
                   )}
                 >
-                  {tab === 'pending_review' ? 'In Review' : tab}
+                  {tab === 'pending_review' ? 'In Review' : tab === 'analytics' ? 'ðŸ“Š Analytics' : tab}
                 </button>
               ))}
             </div>
 
             <div className="space-y-3">
+              {activeTab === 'analytics' ? (
+                <div className="space-y-6">
+                  {/* Engagement summary */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {[
+                      { label: 'Engagement Rate', value: `${engagementRate}%`, icon: TrendingUp, color: 'text-sky-500' },
+                      { label: 'Avg Views / Post', value: avgViews.toLocaleString(), icon: BarChart3, color: 'text-purple-500' },
+                      { label: 'Total Likes', value: stats.likes, icon: Heart, color: 'text-red-500' },
+                      { label: 'Total Comments', value: stats.comments, icon: MessageSquare, color: 'text-indigo-500' },
+                    ].map(({ label, value, icon: Icon, color }) => (
+                      <div key={label} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-3">
+                        <Icon className={`w-4 h-4 mb-1.5 ${color}`} />
+                        <div className="text-lg font-bold text-gray-900 dark:text-white">{value}</div>
+                        <div className="text-xs text-gray-600 dark:text-gray-600">{label}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Views bar chart */}
+                  <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5">
+                    <div className="flex items-center gap-2 mb-5">
+                      <Eye className="w-4 h-4 text-sky-500" />
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Views by Post</h3>
+                    </div>
+                    {publishedPosts.length === 0 ? (
+                      <p className="text-sm text-gray-600 text-center py-6">No published posts yet.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {[...publishedPosts]
+                          .sort((a, b) => (b.views ?? 0) - (a.views ?? 0))
+                          .slice(0, 8)
+                          .map((post) => (
+                            <div key={post.id}>
+                              <div className="flex items-center justify-between text-xs mb-1">
+                                <Link href={`/blog/${post.slug}`} className="text-gray-700 dark:text-gray-300 hover:text-sky-500 transition-colors line-clamp-1 max-w-[75%]">{post.title}</Link>
+                                <span className="font-semibold text-gray-600 dark:text-gray-600 shrink-0">{(post.views ?? 0).toLocaleString()}</span>
+                              </div>
+                              <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                                <motion.div
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${((post.views ?? 0) / maxViews) * 100}%` }}
+                                  transition={{ duration: 0.7, ease: 'easeOut' }}
+                                  className="h-2 bg-gradient-to-r from-sky-400 to-indigo-500 rounded-full"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Likes bar chart */}
+                  <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5">
+                    <div className="flex items-center gap-2 mb-5">
+                      <Heart className="w-4 h-4 text-red-500" />
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Likes by Post</h3>
+                    </div>
+                    {publishedPosts.length === 0 ? (
+                      <p className="text-sm text-gray-600 text-center py-6">No published posts yet.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {[...publishedPosts]
+                          .sort((a, b) => (b.likes ?? 0) - (a.likes ?? 0))
+                          .slice(0, 8)
+                          .map((post) => (
+                            <div key={post.id}>
+                              <div className="flex items-center justify-between text-xs mb-1">
+                                <span className="text-gray-700 dark:text-gray-300 line-clamp-1 max-w-[75%]">{post.title}</span>
+                                <span className="font-semibold text-gray-600 dark:text-gray-600 shrink-0">{post.likes ?? 0}</span>
+                              </div>
+                              <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                                <motion.div
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${((post.likes ?? 0) / maxLikes) * 100}%` }}
+                                  transition={{ duration: 0.7, ease: 'easeOut', delay: 0.15 }}
+                                  className="h-2 bg-gradient-to-r from-rose-400 to-pink-500 rounded-full"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Category distribution */}
+                  {sortedCategories.length > 0 && (
+                    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5">
+                      <div className="flex items-center gap-2 mb-5">
+                        <BookOpen className="w-4 h-4 text-amber-500" />
+                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Posts by Category</h3>
+                      </div>
+                      <div className="space-y-3">
+                        {sortedCategories.map(([cat, count]) => (
+                          <div key={cat}>
+                            <div className="flex items-center justify-between text-xs mb-1">
+                              <span className="text-gray-700 dark:text-gray-300 font-medium">{cat}</span>
+                              <span className="text-gray-600 dark:text-gray-600">{count} post{count > 1 ? 's' : ''}</span>
+                            </div>
+                            <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${(count / myPosts.length) * 100}%` }}
+                                transition={{ duration: 0.7, ease: 'easeOut', delay: 0.2 }}
+                                className="h-2 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <>
               {postsLoading ? (
                 <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                  <Loader2 className="w-5 h-5 animate-spin text-gray-600" />
                 </div>
               ) : filtered.length === 0 ? (
-                <div className="text-center py-12 text-gray-400 bg-gray-50 dark:bg-gray-900/50 rounded-2xl">
+                <div className="text-center py-12 text-gray-600 bg-gray-50 dark:bg-gray-900/50 rounded-2xl">
                   {myPosts.length === 0
                     ? <><p className="mb-3">You haven&apos;t written any posts yet.</p><Link href="/create" className="btn-primary text-sm inline-flex items-center gap-2"><Plus className="w-4 h-4" />Write your first post</Link></>
                     : 'No posts in this category.'}
@@ -261,7 +388,7 @@ export default function DashboardPage() {
                           {cfg.label}
                         </span>
                       </div>
-                      <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500">
+                      <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-600">
                         <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{post.views.toLocaleString()}</span>
                         <span className="flex items-center gap-1"><Heart className="w-3 h-3" />{post.likes}</span>
                         <span className="flex items-center gap-1"><MessageSquare className="w-3 h-3" />{post.commentCount}</span>
@@ -273,21 +400,21 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-1 shrink-0">
                       <Link
                         href={`/blog/${post.slug}`}
-                        className="p-1.5 text-gray-400 hover:text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-all"
+                        className="p-1.5 text-gray-600 hover:text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-all"
                         title="View"
                       >
                         <BookOpen className="w-4 h-4" />
                       </Link>
                       <Link
                         href={`/blog/${post.slug}/edit`}
-                        className="p-1.5 text-gray-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-all"
+                        className="p-1.5 text-gray-600 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-all"
                         title="Edit"
                       >
                         <Edit2 className="w-4 h-4" />
                       </Link>
                       <button
                         onClick={() => handleDelete(post.id)}
-                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                        className="p-1.5 text-gray-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
                         title="Delete"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -296,6 +423,8 @@ export default function DashboardPage() {
                   </motion.div>
                 );
               })}
+                </>
+              )}
             </div>
           </div>
 
@@ -319,7 +448,7 @@ export default function DashboardPage() {
                       <Star className="h-3 w-3" /> Premium Active
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-600 dark:text-gray-600">
                     Access until{' '}
                     <span className="font-semibold text-gray-700 dark:text-gray-300">
                       {new Date(subscription.subscriptionEndDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -327,17 +456,17 @@ export default function DashboardPage() {
                   </p>
                   {paymentHistory.length > 0 && (
                     <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
-                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1">
+                      <p className="text-xs font-medium text-gray-600 dark:text-gray-600 mb-2 flex items-center gap-1">
                         <CreditCard className="h-3 w-3" /> Payment History
                       </p>
                       <div className="space-y-1.5">
                         {paymentHistory.slice(0, 3).map((rec) => (
                           <div key={rec.id ?? rec.razorpayPaymentId} className="flex items-center justify-between text-xs">
-                            <span className="text-gray-500 dark:text-gray-400">
+                            <span className="text-gray-600 dark:text-gray-600">
                               {new Date(rec.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                             </span>
                             <span className={cn('font-semibold', rec.status === 'SUCCESS' ? 'text-green-600 dark:text-green-400' : 'text-red-500')}>
-                              {rec.status === 'SUCCESS' ? `₹${(rec.amountPaid / 100).toFixed(0)}` : 'Failed'}
+                              {rec.status === 'SUCCESS' ? `â‚¹${(rec.amountPaid / 100).toFixed(0)}` : 'Failed'}
                             </span>
                           </div>
                         ))}
@@ -350,16 +479,16 @@ export default function DashboardPage() {
                       disabled={cancellingSubscription}
                       className="w-full rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-3 py-2 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 disabled:opacity-60 transition-all"
                     >
-                      {cancellingSubscription ? 'Cancelling…' : 'Cancel Subscription'}
+                      {cancellingSubscription ? 'Cancellingâ€¦' : 'Cancel Subscription'}
                     </button>
                   )}
                 </div>
               ) : subscription && subscription.subscriptionStatus === 'CANCELLED' ? (
                 <div className="space-y-3">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 dark:bg-gray-800 px-2.5 py-0.5 text-xs font-semibold text-gray-500 dark:text-gray-400">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 dark:bg-gray-800 px-2.5 py-0.5 text-xs font-semibold text-gray-600 dark:text-gray-600">
                     Cancelled
                   </span>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-600 dark:text-gray-600">
                     Access until{' '}
                     {new Date(subscription.subscriptionEndDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </p>
@@ -367,13 +496,13 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 dark:bg-gray-800 px-2.5 py-0.5 text-xs font-semibold text-gray-500 dark:text-gray-400">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 dark:bg-gray-800 px-2.5 py-0.5 text-xs font-semibold text-gray-600 dark:text-gray-600">
                     Free Plan
                   </span>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-600 dark:text-gray-600">
                     Upgrade to unlock all premium articles.
                   </p>
-                  <RazorpayCheckoutButton label="Upgrade — ₹499/mo" className="w-full justify-center text-xs py-2.5" />
+                  <RazorpayCheckoutButton label="Upgrade â€” â‚¹499/mo" className="w-full justify-center text-xs py-2.5" />
                 </div>
               )}
             </div>
@@ -395,15 +524,15 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2">
                     <div className="text-sm font-bold text-gray-900 dark:text-white">{topPost.views.toLocaleString()}</div>
-                    <div className="text-xs text-gray-400">Views</div>
+                    <div className="text-xs text-gray-600">Views</div>
                   </div>
                   <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2">
                     <div className="text-sm font-bold text-gray-900 dark:text-white">{topPost.likes}</div>
-                    <div className="text-xs text-gray-400">Likes</div>
+                    <div className="text-xs text-gray-600">Likes</div>
                   </div>
                   <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2">
                     <div className="text-sm font-bold text-gray-900 dark:text-white">{topPost.commentCount}</div>
-                    <div className="text-xs text-gray-400">Comments</div>
+                    <div className="text-xs text-gray-600">Comments</div>
                   </div>
                 </div>
               </div>
@@ -424,21 +553,21 @@ export default function DashboardPage() {
                       <span className={cn(
                         'w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0',
                         i === 0 ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30' :
-                        i === 1 ? 'bg-gray-100 text-gray-500 dark:bg-gray-800' :
+                        i === 1 ? 'bg-gray-100 text-gray-600 dark:bg-gray-800' :
                         i === 2 ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30' :
-                        'bg-gray-50 text-gray-400 dark:bg-gray-900'
+                        'bg-gray-50 text-gray-600 dark:bg-gray-900'
                       )}>
                         {i + 1}
                       </span>
                       <Link href={`/blog/${p.slug}`} className="text-xs text-gray-600 dark:text-gray-300 hover:text-sky-500 transition-colors line-clamp-1 flex-1">
                         {p.title}
                       </Link>
-                      <span className="text-xs text-gray-400 shrink-0">{Math.round(trendingScore(p))}</span>
+                      <span className="text-xs text-gray-600 shrink-0">{Math.round(trendingScore(p))}</span>
                     </div>
                   ))}
               </div>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
-                Score = views×0.5 + likes×2 + comments×3
+              <p className="text-xs text-gray-600 dark:text-gray-600 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+                Score = viewsÃ—0.5 + likesÃ—2 + commentsÃ—3
               </p>
             </div>
 

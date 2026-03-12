@@ -28,7 +28,19 @@ export function Navbar() {
     setMounted(true);
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    // WCAG 2.1.2 — close menus on Escape
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMobileOpen(false);
+        setUserMenuOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const navLinks = [
@@ -50,7 +62,7 @@ export function Navbar() {
           : 'bg-transparent'
       )}
     >
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav aria-label="Main navigation" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
@@ -93,6 +105,9 @@ export function Navbar() {
                 </Button>
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  aria-label={`${session.user?.name ?? 'User'} menu`}
+                  aria-expanded={userMenuOpen}
+                  aria-haspopup="menu"
                   className="flex items-center gap-2 p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all"
                 >
                   <Avatar className="h-8 w-8 ring-2 ring-sky-500/30">
@@ -101,17 +116,21 @@ export function Navbar() {
                       {session.user?.name?.[0] ?? 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <ChevronDown className="w-4 h-4 text-gray-500 hidden md:block" />
+                  <ChevronDown className="w-4 h-4 text-gray-600 hidden md:block" />
                 </button>
 
                 {userMenuOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 slide-in-from-top-2">
+                  <div
+                    role="menu"
+                    aria-label="User menu"
+                    className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 slide-in-from-top-2"
+                  >
                     <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-semibold text-gray-900 dark:text-white">{session.user?.name}</p>
                         <Badge variant="secondary" className="text-[10px]">{roleLabel}</Badge>
                       </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{session.user?.email}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-600 truncate">{session.user?.email}</p>
                     </div>
                     <div className="p-1">
                       <Button variant="ghost" size="sm" className="w-full justify-start" asChild onClick={() => setUserMenuOpen(false)}>
@@ -171,7 +190,15 @@ export function Navbar() {
             )}
 
             {/* Mobile Menu Toggle */}
-            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-menu"
+              onClick={() => setMobileOpen(!mobileOpen)}
+            >
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
           </div>
@@ -179,7 +206,7 @@ export function Navbar() {
 
         {/* Mobile Menu */}
         {mobileOpen && (
-          <div className="md:hidden pb-4 animate-in fade-in slide-in-from-top-4">
+          <div id="mobile-menu" role="region" aria-label="Mobile navigation" className="md:hidden pb-4 animate-in fade-in slide-in-from-top-4">
             <div className="flex flex-col gap-1 pt-2 border-t border-gray-200 dark:border-gray-800">
               {navLinks.map((link) => (
                 <Button key={link.href} variant="ghost" size="sm" className="justify-start" asChild onClick={() => setMobileOpen(false)}>

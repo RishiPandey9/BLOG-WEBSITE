@@ -23,7 +23,7 @@ export default function ProfilePage() {
       <div className="min-h-screen pt-24 flex flex-col items-center justify-center text-center px-4">
         <div className="text-6xl mb-4">👋</div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Sign In Required</h1>
-        <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">
+        <p className="text-gray-600 dark:text-gray-600 mb-6 max-w-md">
           Sign in to view your profile and manage your posts.
         </p>
         <Link href="/auth/signin" className="btn-primary">
@@ -108,7 +108,7 @@ export default function ProfilePage() {
           <div className="text-center py-16 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800">
             <div className="text-5xl mb-4">✍️</div>
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">No posts yet</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            <p className="text-sm text-gray-600 dark:text-gray-600 mb-4">
               Start sharing your knowledge with the community!
             </p>
             <Link href="/create" className="btn-primary text-sm">

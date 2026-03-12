@@ -284,12 +284,12 @@ export default function AdminPage() {
           <ShieldAlert className="w-8 h-8 text-red-500" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Access Denied</h1>
-        <p className="text-gray-500 dark:text-gray-400 mb-2 max-w-md">
+        <p className="text-gray-600 dark:text-gray-600 mb-2 max-w-md">
           {isAuthenticated
             ? <>Your current role is <strong className="text-gray-900 dark:text-white">{label}</strong>.</>
             : 'You must sign in first.'}
         </p>
-        <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">
+        <p className="text-gray-600 dark:text-gray-600 mb-6 max-w-md">
           Only <strong className="text-amber-600 dark:text-amber-400">Managers</strong> can access the admin panel.
         </p>
         <Link href={isAuthenticated ? '/blog' : '/auth/signin'} className="btn-secondary">
@@ -347,7 +347,7 @@ export default function AdminPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Panel</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Manage posts, users, and site settings</p>
+            <p className="text-sm text-gray-600 dark:text-gray-600">Manage posts, users, and site settings</p>
           </div>
         </div>
 
@@ -362,7 +362,7 @@ export default function AdminPage() {
                 <stat.icon className="w-5 h-5" />
               </div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{stat.label}</p>
+              <p className="text-xs text-gray-600 dark:text-gray-600 mt-0.5">{stat.label}</p>
             </div>
           ))}
         </div>
@@ -403,7 +403,7 @@ export default function AdminPage() {
                 <s.icon className="w-5 h-5" />
               </div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{s.value}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{s.label}</p>
+              <p className="text-xs text-gray-600 dark:text-gray-600 mt-0.5">{s.label}</p>
             </div>
           ))}
         </div>
@@ -429,10 +429,10 @@ export default function AdminPage() {
               <div className="divide-y divide-gray-100 dark:divide-gray-800">
                 {postsLoading ? (
                   <div className="flex items-center justify-center py-10">
-                    <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                    <Loader2 className="w-5 h-5 animate-spin text-gray-600" />
                   </div>
                 ) : allPosts.length === 0 ? (
-                  <div className="text-center py-10 text-gray-400 text-sm">No posts yet.</div>
+                  <div className="text-center py-10 text-gray-600 text-sm">No posts yet.</div>
                 ) : (
                   allPosts.map((post) => (
                     <div key={post.id} className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
@@ -440,12 +440,12 @@ export default function AdminPage() {
                         <Link href={`/blog/${post.slug}`} className="text-sm font-semibold text-gray-900 dark:text-white hover:text-sky-500 dark:hover:text-sky-400 transition-colors truncate block">
                           {post.title}
                         </Link>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-2">
+                        <p className="text-xs text-gray-600 dark:text-gray-600 mt-0.5 flex items-center gap-2">
                           <span>{post.category} • {post.author.name}</span>
                           <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${
                             post.status === 'published' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
                             post.status === 'pending_review' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
-                            post.status === 'draft' ? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' :
+                            post.status === 'draft' ? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-600' :
                             'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                           }`}>
                             {post.status === 'pending_review' ? 'Pending Review' : post.status.charAt(0).toUpperCase() + post.status.slice(1)}
@@ -456,7 +456,7 @@ export default function AdminPage() {
                         {post.status === 'pending_review' && (
                           <button
                             onClick={() => handlePublishPost(post.id, post.status)}
-                            className="p-1.5 text-gray-400 hover:text-green-500 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all"
+                            className="p-1.5 text-gray-600 hover:text-green-500 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all"
                             title="Publish"
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" />
@@ -465,7 +465,7 @@ export default function AdminPage() {
                         {post.status === 'published' && (
                           <button
                             onClick={() => handlePublishPost(post.id, post.status)}
-                            className="p-1.5 text-gray-400 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-all"
+                            className="p-1.5 text-gray-600 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-all"
                             title="Unpublish"
                           >
                             <XCircle className="w-3.5 h-3.5" />
@@ -476,7 +476,7 @@ export default function AdminPage() {
                           className={`p-1.5 rounded-lg transition-all ${
                             post.isPremium
                               ? 'text-amber-500 bg-amber-50 dark:bg-amber-900/20'
-                              : 'text-gray-400 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20'
+                              : 'text-gray-600 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20'
                           }`}
                           title={post.isPremium ? 'Remove premium gate' : 'Mark as premium'}
                         >
@@ -484,14 +484,14 @@ export default function AdminPage() {
                         </button>
                         <Link
                           href={`/blog/${post.slug}/edit`}
-                          className="p-1.5 text-gray-400 hover:text-sky-500 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-all"
+                          className="p-1.5 text-gray-600 hover:text-sky-500 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-all"
                           title="Edit"
                         >
                           <PenSquare className="w-3.5 h-3.5" />
                         </Link>
                         <button
                           onClick={() => handleDeletePost(post.id)}
-                          className="p-1.5 text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                          className="p-1.5 text-gray-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
                           title="Delete"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -515,7 +515,7 @@ export default function AdminPage() {
                     </span>
                   )}
                 </h2>
-                <div className="flex items-center gap-3 text-xs text-gray-400">
+                <div className="flex items-center gap-3 text-xs text-gray-600">
                   <span className="flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3 text-emerald-500" />
                     {commentStats.approved} approved
@@ -535,12 +535,12 @@ export default function AdminPage() {
 
               {commentsLoading ? (
                 <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                  <Loader2 className="w-5 h-5 animate-spin text-gray-600" />
                 </div>
               ) : pendingComments.length === 0 ? (
                 <div className="text-center py-10">
                   <CheckCircle2 className="w-10 h-10 mx-auto text-emerald-300 dark:text-emerald-700 mb-2" />
-                  <p className="text-sm text-gray-500 dark:text-gray-400">All caught up! No pending comments.</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-600">All caught up! No pending comments.</p>
                 </div>
               ) : (
                 <div className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -558,7 +558,7 @@ export default function AdminPage() {
                             <span className="text-sm font-semibold text-gray-900 dark:text-white">
                               {comment.author?.name || 'Anonymous'}
                             </span>
-                            <span className="text-xs text-gray-400">
+                            <span className="text-xs text-gray-600">
                               {formatRelativeDate(comment.createdAt)}
                             </span>
                             <span
@@ -576,7 +576,7 @@ export default function AdminPage() {
                           <p className="text-sm text-gray-600 dark:text-gray-300 mb-1 whitespace-pre-wrap">
                             {comment.content}
                           </p>
-                          <p className="text-xs text-gray-400 mb-2">
+                          <p className="text-xs text-gray-600 mb-2">
                             on post: <span className="text-gray-600 dark:text-gray-300">{allPosts.find(p => p.id === comment.postId)?.title || comment.postId}</span>
                           </p>
                           {comment.sentiment.flagged && comment.sentiment.reason && (
@@ -604,7 +604,7 @@ export default function AdminPage() {
                             </button>
                             <button
                               onClick={() => handleDeleteComment(comment.id)}
-                              className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                              className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                               Delete
@@ -653,7 +653,7 @@ export default function AdminPage() {
                       className={`px-3 py-2 text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${
                         userTab === tab.id
                           ? 'border-amber-500 text-amber-600 dark:text-amber-400'
-                          : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                          : 'border-transparent text-gray-600 dark:text-gray-600 hover:text-gray-700 dark:hover:text-gray-200'
                       }`}
                     >
                       {tab.label}
@@ -677,10 +677,10 @@ export default function AdminPage() {
                 <div className="divide-y divide-gray-100 dark:divide-gray-800 max-h-80 overflow-y-auto">
                   {usersLoading ? (
                     <div className="flex items-center justify-center py-10">
-                      <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                      <Loader2 className="w-5 h-5 animate-spin text-gray-600" />
                     </div>
                   ) : displayUsers.length === 0 ? (
-                    <div className="text-center py-10 text-gray-400 text-sm">No users found.</div>
+                    <div className="text-center py-10 text-gray-600 text-sm">No users found.</div>
                   ) : (
                     displayUsers.map((user) => {
                       const isDelegate = activeDelegations.some((d) => d.userEmail === user.email);
@@ -694,7 +694,7 @@ export default function AdminPage() {
                           />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{user.name}</p>
-                            <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                            <p className="text-xs text-gray-600 truncate">{user.email}</p>
                           </div>
                           <div className="flex items-center gap-1.5 flex-shrink-0">
                             {user.isPremium && (
@@ -731,10 +731,10 @@ export default function AdminPage() {
                 <div className="divide-y divide-gray-100 dark:divide-gray-800 max-h-80 overflow-y-auto">
                   {usersLoading ? (
                     <div className="flex items-center justify-center py-10">
-                      <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                      <Loader2 className="w-5 h-5 animate-spin text-gray-600" />
                     </div>
                   ) : subscriberUsers.length === 0 ? (
-                    <div className="text-center py-10 text-gray-400 text-sm">No active premium subscribers yet.</div>
+                    <div className="text-center py-10 text-gray-600 text-sm">No active premium subscribers yet.</div>
                   ) : (
                     subscriberUsers.map((user) => (
                       <div key={user.email} className="flex items-center gap-3 px-4 py-3">
@@ -746,14 +746,14 @@ export default function AdminPage() {
                         />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{user.name}</p>
-                          <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                          <p className="text-xs text-gray-600 truncate">{user.email}</p>
                         </div>
                         <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
                           <span className="tag-pill text-[10px] bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 flex items-center gap-1">
                             <Crown className="w-3 h-3" /> Premium
                           </span>
                           {user.subscriptionEndDate && (
-                            <span className="text-[10px] text-gray-400">
+                            <span className="text-[10px] text-gray-600">
                               until {new Date(user.subscriptionEndDate).toLocaleDateString()}
                             </span>
                           )}
@@ -769,12 +769,12 @@ export default function AdminPage() {
                 <div className="divide-y divide-gray-100 dark:divide-gray-800 max-h-80 overflow-y-auto">
                   {delegationsLoading ? (
                     <div className="flex items-center justify-center py-10">
-                      <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                      <Loader2 className="w-5 h-5 animate-spin text-gray-600" />
                     </div>
                   ) : delegations.length === 0 ? (
                     <div className="text-center py-10">
                       <Shield className="w-10 h-10 mx-auto text-gray-300 dark:text-gray-700 mb-2" />
-                      <p className="text-sm text-gray-400">No delegations have been created.</p>
+                      <p className="text-sm text-gray-600">No delegations have been created.</p>
                       {isMainAdmin && (
                         <button
                           onClick={() => { setGrantEmail(''); setGrantName(''); setGrantAvatar(''); setShowGrantModal(true); }}
@@ -801,18 +801,18 @@ export default function AdminPage() {
                                     ? 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300'
                                     : d.isRevoked
                                     ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-                                    : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
+                                    : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-600'
                                 }`}>
                                   {isActive ? 'Active' : d.isRevoked ? 'Revoked' : 'Expired'}
                                 </span>
                               </div>
-                              <p className="text-xs text-gray-400 truncate">{d.userEmail}</p>
-                              <p className="text-xs text-gray-400">
+                              <p className="text-xs text-gray-600 truncate">{d.userEmail}</p>
+                              <p className="text-xs text-gray-600">
                                 by <span className="text-gray-600 dark:text-gray-300">{d.grantedByName}</span>
                               </p>
                               <div className="flex items-center gap-1.5 mt-0.5">
-                                <Timer className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                                <span className={`text-[10px] ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400'}`}>
+                                <Timer className="w-3 h-3 text-gray-600 flex-shrink-0" />
+                                <span className={`text-[10px] ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-600'}`}>
                                   {isActive
                                     ? `Expires ${new Date(d.expiresAt).toLocaleString()}`
                                     : d.isRevoked
@@ -842,7 +842,7 @@ export default function AdminPage() {
             {/* Quick Actions */}
             <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6">
               <h2 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <Settings className="w-4 h-4 text-gray-500" />
+                <Settings className="w-4 h-4 text-gray-600" />
                 Quick Actions
               </h2>
               <div className="space-y-2">
@@ -911,7 +911,7 @@ export default function AdminPage() {
                 </h2>
                 <button
                   onClick={() => setShowGrantModal(false)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors text-lg leading-none"
+                  className="text-gray-600 hover:text-gray-600 dark:hover:text-gray-200 transition-colors text-lg leading-none"
                   aria-label="Close"
                 >
                   ×
@@ -949,7 +949,7 @@ export default function AdminPage() {
                     />
                   )}
                   {grantEmail && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Granting to: <strong>{grantName || grantEmail}</strong></p>
+                    <p className="text-xs text-gray-600 dark:text-gray-600 mt-1">Granting to: <strong>{grantName || grantEmail}</strong></p>
                   )}
                 </div>
 

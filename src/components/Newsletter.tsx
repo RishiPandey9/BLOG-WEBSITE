@@ -8,14 +8,32 @@ import toast from 'react-hot-toast';
 export function Newsletter() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-    setSubscribed(true);
-    toast.success('Successfully subscribed to newsletter!');
-    setEmail('');
-    setTimeout(() => setSubscribed(false), 3000);
+    setLoading(true);
+    try {
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json() as { message?: string; error?: string };
+      if (res.ok || res.status === 200) {
+        setSubscribed(true);
+        toast.success(data.message === 'Already subscribed' ? 'You\'re already subscribed!' : 'Successfully subscribed! 🎉');
+        setEmail('');
+        setTimeout(() => setSubscribed(false), 4000);
+      } else {
+        toast.error(data.error ?? 'Subscription failed. Try again.');
+      }
+    } catch {
+      toast.error('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -75,27 +93,35 @@ export function Newsletter() {
           onSubmit={handleSubmit}
           className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
         >
+          {/* WCAG 1.3.1 — Label associated with input */}
+          <label htmlFor="newsletter-email" className="sr-only">Email address</label>
           <input
+            id="newsletter-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="your@email.com"
-            className="flex-1 px-4 py-3 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl text-white placeholder-sky-200 focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
+            autoComplete="email"
+            aria-required="true"
+            aria-describedby="newsletter-status"
+            className="flex-1 px-4 py-3 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl text-white placeholder-sky-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/70 text-sm"
             required
           />
+          {/* WCAG 4.1.3 — Status messages via aria-live */}
+          <span id="newsletter-status" aria-live="polite" aria-atomic="true" className="sr-only">
+            {subscribed ? 'Successfully subscribed to the newsletter.' : ''}
+          </span>
           <button
             type="submit"
-            disabled={subscribed}
+            disabled={subscribed || loading}
             className="px-6 py-3 bg-white text-sky-600 font-semibold rounded-xl hover:bg-sky-50 transition-all duration-200 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-70"
           >
             {subscribed ? (
-              <>
-                <Check className="w-4 h-4" /> Subscribed!
-              </>
+              <><Check className="w-4 h-4" /> Subscribed!</>
+            ) : loading ? (
+              <span className="w-4 h-4 border-2 border-sky-400 border-t-transparent rounded-full animate-spin" />
             ) : (
-              <>
-                Subscribe <ArrowRight className="w-4 h-4" />
-              </>
+              <>Subscribe <ArrowRight className="w-4 h-4" /></>
             )}
           </button>
         </motion.form>

@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* font-display:swap is set via Next.js Inter font config (display:'swap') */
+/* Force font loading to not block rendering — CLS fix */
+@font-face {
+  font-family: 'Inter';
+  font-display: swap;
+}
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 @layer base {
@@ -39,12 +46,36 @@
   * {
     @apply border-gray-200 dark:border-gray-700;
   }
+
+  /* WCAG AAA 2.4.7 — Focus Visible: clear, high-contrast focus ring on all interactive elements */
+  *:focus-visible {
+    outline: 3px solid #0ea5e9;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Remove default outline only when focus-visible is supported */
+  *:focus:not(:focus-visible) {
+    outline: none;
+  }
+
   body {
     @apply bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100;
     font-family: 'Inter', system-ui, sans-serif;
   }
+
+  /* WCAG AAA 1.4.6 — Enhanced contrast: body copy must be high-contrast */
+  p, li, td, dd, blockquote {
+    @apply text-gray-800 dark:text-gray-200;
+  }
+
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold tracking-tight;
+    @apply font-bold tracking-tight text-gray-900 dark:text-white;
+  }
+
+  /* WCAG AAA 1.4.8 — Readable line spacing */
+  p {
+    line-height: 1.8;
   }
 }
 
@@ -66,19 +97,19 @@
   }
 
   .btn-primary {
-    @apply inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-sky-500/25 active:scale-95;
+    @apply inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-sky-500/25 active:scale-95 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-400 focus-visible:ring-offset-2;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center gap-2 px-6 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold rounded-xl transition-all duration-200 active:scale-95;
+    @apply inline-flex items-center gap-2 px-6 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold rounded-xl transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-gray-400 focus-visible:ring-offset-2;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-lg transition-all duration-200;
+    @apply inline-flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-1;
   }
 
   .input-field {
-    @apply w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 dark:focus:ring-sky-400 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-200;
+    @apply w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus:border-sky-500 dark:focus:border-sky-400 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200;
   }
 
   .section-title {
@@ -87,6 +118,12 @@
 
   .tag-pill {
     @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold;
+  }
+
+  /* WCAG AAA 1.4.6 — muted text must meet 4.5:1 minimum (AA) or 7:1 (AAA) */
+  /* Upgrade all gray-400/gray-500 muted text to gray-600 (light) / gray-300 (dark) */
+  .text-muted {
+    @apply text-gray-600 dark:text-gray-300;
   }
 }
 
@@ -162,6 +199,7 @@ html.lenis, html.lenis body {
 
 .float-animation {
   animation: float 3s ease-in-out infinite;
+  will-change: transform; /* GPU compositing — fixes Lighthouse non-composited animation */
 }
 
 @keyframes shimmer {
@@ -199,4 +237,5 @@ html.lenis, html.lenis body {
 .gradient-shift {
   background-size: 200% 200%;
   animation: gradient-shift 6s ease infinite;
+  will-change: background-position;
 }

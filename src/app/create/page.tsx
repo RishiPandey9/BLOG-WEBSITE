@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { PenSquare, Eye, Send, Tags, Type, FileText, ArrowLeft, Save, Clock } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
-import { BlogContent } from '@/components/BlogContent';
 import { ImageUploader } from '@/components/ImageUploader';
+import { TipTapEditor } from '@/components/TipTapEditor';
 import { categories } from '@/lib/data';
 import { useRole } from '@/hooks/useRole';
 
@@ -46,7 +46,7 @@ export default function CreatePostPage() {
       <div className="min-h-screen pt-24 flex flex-col items-center justify-center text-center px-4">
         <div className="text-6xl mb-4">🔒</div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Authentication Required</h1>
-        <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">
+        <p className="text-gray-600 dark:text-gray-600 mb-6 max-w-md">
           You need to sign in to write blog posts.
         </p>
         <Link href="/auth/signin" className="btn-primary">Sign In to Continue</Link>
@@ -155,8 +155,8 @@ export default function CreatePostPage() {
 
         {/* Auto-generated slug preview */}
         {title && (
-          <div className="mb-6 flex items-center gap-2 text-xs text-gray-400">
-            <span className="font-medium text-gray-500">Slug:</span>
+          <div className="mb-6 flex items-center gap-2 text-xs text-gray-600">
+            <span className="font-medium text-gray-600">Slug:</span>
             <span className="font-mono bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">/blog/{slug}</span>
           </div>
         )}
@@ -167,8 +167,11 @@ export default function CreatePostPage() {
             <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white mb-4">
               {title || 'Untitled Post'}
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 mb-8">{excerpt}</p>
-            <BlogContent content={content || '*Start writing your post...*'} />
+            <p className="text-gray-600 dark:text-gray-600 mb-8">{excerpt}</p>
+            <div
+              className="prose prose-base dark:prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: content || '<p><em>Start writing your post...</em></p>' }}
+            />
           </div>
         ) : (
           /* Edit Mode */
@@ -248,18 +251,13 @@ export default function CreatePostPage() {
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 <PenSquare className="w-4 h-4" />
-                Content (Markdown) <span className="text-red-500">*</span>
+                Content <span className="text-red-500">*</span>
               </label>
-              <textarea
+              <TipTapEditor
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Write your blog post content in Markdown..."
-                rows={20}
-                className="input-field font-mono text-sm resize-y"
+                onChange={setContent}
+                placeholder="Write your blog post content..."
               />
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                Supports Markdown: **bold**, *italic*, # headings, ```code blocks```, lists, and more.
-              </p>
             </div>
           </div>
         )}

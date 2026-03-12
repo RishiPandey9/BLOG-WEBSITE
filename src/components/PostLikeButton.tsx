@@ -117,15 +117,16 @@ export function PostLikeButton({ postId, initialLikes, className }: PostLikeButt
   return (
     <button
       onClick={handleLike}
-      aria-label={liked ? 'Unlike post' : 'Like post'}
+      aria-label={liked ? `Unlike post. ${likes} likes` : `Like post. ${likes} likes`}
+      aria-pressed={liked}
       className={cn(
         'btn-ghost text-sm transition-all',
         liked ? 'text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20' : '',
         className
       )}
     >
-      <Heart className={cn('w-4 h-4', liked && 'fill-red-500 dark:fill-red-400')} />
-      <span>{likes.toLocaleString()}</span>
+      <Heart className={cn('w-4 h-4', liked && 'fill-red-500 dark:fill-red-400')} aria-hidden="true" />
+      <span aria-hidden="true">{likes.toLocaleString()}</span>
     </button>
   );
 }

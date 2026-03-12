@@ -44,7 +44,7 @@ export default function TagPage({ params }: TagPageProps) {
         {/* Back link */}
         <Link
           href="/blog"
-          className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-8 transition-colors"
+          className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-600 hover:text-gray-900 dark:hover:text-white mb-8 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           All Articles
@@ -61,7 +61,7 @@ export default function TagPage({ params }: TagPageProps) {
                 #{decodedTag}
               </h1>
             </div>
-            <p className="text-gray-500 dark:text-gray-400 ml-13">
+            <p className="text-gray-600 dark:text-gray-600 ml-13">
               {tagPosts.length} {tagPosts.length === 1 ? 'article' : 'articles'} tagged with&nbsp;
               <span className="text-sky-500 font-medium">#{decodedTag}</span>
             </p>

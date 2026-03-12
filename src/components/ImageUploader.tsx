@@ -76,7 +76,7 @@ export function ImageUploader({
           className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
             tab === 'url'
               ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-              : 'text-gray-500 dark:text-gray-400'
+              : 'text-gray-600 dark:text-gray-600'
           }`}
         >
           <LinkIcon className="w-3 h-3" />
@@ -88,7 +88,7 @@ export function ImageUploader({
           className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
             tab === 'upload'
               ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-              : 'text-gray-500 dark:text-gray-400'
+              : 'text-gray-600 dark:text-gray-600'
           }`}
         >
           <Upload className="w-3 h-3" />
@@ -123,7 +123,7 @@ export function ImageUploader({
             type="button"
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-sm text-gray-500 dark:text-gray-400 hover:border-sky-400 hover:text-sky-500 transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-sm text-gray-600 dark:text-gray-600 hover:border-sky-400 hover:text-sky-500 transition-colors disabled:opacity-50"
           >
             {uploading ? (
               <>
@@ -163,7 +163,7 @@ export function ImageUploader({
         </div>
       ) : (
         <div className="flex items-center justify-center w-full h-32 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-          <div className="text-center text-gray-400">
+          <div className="text-center text-gray-600">
             <ImageIcon className="w-8 h-8 mx-auto mb-1" />
             <p className="text-xs">No image selected</p>
           </div>

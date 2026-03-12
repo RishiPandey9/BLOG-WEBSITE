@@ -64,6 +64,6 @@ export function getRoleBadgeColor(role?: string | null): string {
     case 'viewer':
       return 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300';
     default:
-      return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
+      return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-600';
   }
 }

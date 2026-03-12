@@ -45,7 +45,7 @@ export function EditPostForm({ post }: EditPostFormProps) {
       <div className="min-h-screen pt-24 flex flex-col items-center justify-center text-center px-4">
         <div className="text-6xl mb-4">🔒</div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Authentication Required</h1>
-        <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">
+        <p className="text-gray-600 dark:text-gray-600 mb-6 max-w-md">
           You need to sign in to edit blog posts.
         </p>
         <Link href="/auth/signin" className="btn-primary">Sign In to Continue</Link>
@@ -60,10 +60,10 @@ export function EditPostForm({ post }: EditPostFormProps) {
           <ShieldAlert className="w-8 h-8 text-red-500" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Access Denied</h1>
-        <p className="text-gray-500 dark:text-gray-400 mb-2 max-w-md">
+        <p className="text-gray-600 dark:text-gray-600 mb-2 max-w-md">
           Your current role is <strong className="text-gray-900 dark:text-white">{label}</strong>.
         </p>
-        <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">
+        <p className="text-gray-600 dark:text-gray-600 mb-6 max-w-md">
           Only users with the <strong className="text-amber-600 dark:text-amber-400">Manager</strong> role can edit posts.
         </p>
         <Link href={`/blog/${post.slug}`} className="btn-secondary">Back to Post</Link>
@@ -108,7 +108,7 @@ export function EditPostForm({ post }: EditPostFormProps) {
             </Link>
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Post</h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              <p className="text-xs text-gray-600 dark:text-gray-600 mt-0.5">
                 Editing: <span className="text-amber-600 dark:text-amber-400 font-medium">{post.title}</span>
               </p>
             </div>
@@ -157,7 +157,7 @@ export function EditPostForm({ post }: EditPostFormProps) {
             <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white mb-4">
               {title || 'Untitled Post'}
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 mb-8 border-l-4 border-sky-400 pl-4 italic">{excerpt}</p>
+            <p className="text-gray-600 dark:text-gray-600 mb-8 border-l-4 border-sky-400 pl-4 italic">{excerpt}</p>
             <BlogContent content={content || '*Start writing your post...*'} />
           </motion.div>
         ) : (
@@ -252,7 +252,7 @@ export function EditPostForm({ post }: EditPostFormProps) {
                 rows={24}
                 className="input-field font-mono text-sm resize-y"
               />
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+              <p className="text-xs text-gray-600 dark:text-gray-600 mt-2">
                 Supports Markdown: **bold**, *italic*, # headings, ```code blocks```, lists, and more.
               </p>
             </div>
@@ -260,19 +260,19 @@ export function EditPostForm({ post }: EditPostFormProps) {
             {/* Post metadata (read-only) */}
             <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Post ID</p>
+                <p className="text-xs text-gray-600 dark:text-gray-600 mb-1">Post ID</p>
                 <p className="font-mono text-gray-600 dark:text-gray-300 text-xs">{post.id}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Slug</p>
+                <p className="text-xs text-gray-600 dark:text-gray-600 mb-1">Slug</p>
                 <p className="font-mono text-gray-600 dark:text-gray-300 text-xs">{post.slug}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Published</p>
+                <p className="text-xs text-gray-600 dark:text-gray-600 mb-1">Published</p>
                 <p className="text-gray-600 dark:text-gray-300 text-xs">{new Date(post.publishedAt).toLocaleDateString()}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Reading Time</p>
+                <p className="text-xs text-gray-600 dark:text-gray-600 mb-1">Reading Time</p>
                 <p className="text-gray-600 dark:text-gray-300 text-xs">{post.readingTime} min</p>
               </div>
             </div>

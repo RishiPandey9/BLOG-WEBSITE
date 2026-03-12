@@ -88,8 +88,8 @@ export function PostCard({ post, featured = false, index = 0 }: PostCardProps) {
           )}>
             {post.category}
           </Badge>
-          <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
-            <Clock className="w-3 h-3" />
+          <span className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300">
+            <Clock className="w-3 h-3" aria-hidden="true" />
             {post.readingTime} min read
           </span>
         </div>
@@ -105,7 +105,7 @@ export function PostCard({ post, featured = false, index = 0 }: PostCardProps) {
         </Link>
 
         {/* Excerpt */}
-        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4 leading-relaxed">
+        <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 mb-4 leading-relaxed">
           {post.excerpt}
         </p>
 
@@ -131,31 +131,31 @@ export function PostCard({ post, featured = false, index = 0 }: PostCardProps) {
             />
             <div>
               <Link href={`/u/${post.author?.username || 'user'}`} className="text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-sky-500 transition-colors">{post.author?.name || 'Anonymous'}</Link>
-              <p className="text-xs text-gray-400 dark:text-gray-500">{formatDate(post.publishedAt)}</p>
+              <p className="text-xs text-gray-600 dark:text-gray-300">{formatDate(post.publishedAt)}</p>
             </div>
           </div>
 
           {/* Stats */}
           <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
-              <Heart className="w-3 h-3 transition-transform group-hover:scale-110" />
+            <span className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300">
+              <Heart className="w-3 h-3 transition-transform group-hover:scale-110" aria-hidden="true" />
               {post.likes}
             </span>
-            <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
-              <Eye className="w-3 h-3" />
+            <span className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300">
+              <Eye className="w-3 h-3" aria-hidden="true" />
               {post.views.toLocaleString()}
             </span>
-            <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
-              <MessageSquare className="w-3 h-3" />
+            <span className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300">
+              <MessageSquare className="w-3 h-3" aria-hidden="true" />
               {post.commentCount}
             </span>
             <Link
               href={`/blog/${post.slug}`}
               className="flex items-center gap-1 text-xs font-semibold text-sky-500 dark:text-sky-400 hover:text-sky-600 dark:hover:text-sky-300 transition-colors group/link"
             >
-              {post.isPremium ? <Lock className="w-3 h-3" /> : null}
+              {post.isPremium ? <Lock className="w-3 h-3" aria-hidden="true" /> : null}
               {post.isPremium ? 'Preview' : 'Read'}
-              <ArrowUpRight className="w-3 h-3 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
+              <ArrowUpRight className="w-3 h-3 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" aria-hidden="true" />
             </Link>
           </div>
         </div>

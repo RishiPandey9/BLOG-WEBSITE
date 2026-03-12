@@ -1,11 +1,16 @@
 import Link from 'next/link';
-import { ArrowRight, TrendingUp } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { ArrowRight } from 'lucide-react';
 import { Hero } from '@/components/Hero';
 import { PostCard } from '@/components/PostCard';
-import { Newsletter } from '@/components/Newsletter';
-import { AnimatedSection, AnimatedCategoryGrid, AnimatedTrending, AnimatedTagCloud } from '@/components/HomeAnimations';
 import { posts, categories } from '@/lib/data';
-import { cn, categoryColors } from '@/lib/utils';
+
+// Lazy-load below-fold heavy components to reduce TBT and initial JS payload
+const Newsletter = dynamic(() => import('@/components/Newsletter').then(m => ({ default: m.Newsletter })), { ssr: false });
+const AnimatedSection = dynamic(() => import('@/components/HomeAnimations').then(m => ({ default: m.AnimatedSection })));
+const AnimatedCategoryGrid = dynamic(() => import('@/components/HomeAnimations').then(m => ({ default: m.AnimatedCategoryGrid })));
+const AnimatedTrending = dynamic(() => import('@/components/HomeAnimations').then(m => ({ default: m.AnimatedTrending })));
+const AnimatedTagCloud = dynamic(() => import('@/components/HomeAnimations').then(m => ({ default: m.AnimatedTagCloud })));
 
 export default function Home() {
   const featuredPosts = posts.filter((p) => p.featured);
@@ -23,7 +28,7 @@ export default function Home() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h2 className="section-title">Featured Posts</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-sm text-gray-600 dark:text-gray-600 mt-1">
                 Handpicked articles just for you
               </p>
             </div>

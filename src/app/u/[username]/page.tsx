@@ -75,16 +75,16 @@ export default function AuthorProfilePage({ params }: AuthorPageProps) {
 
               {/* Social links */}
               <div className="flex items-center gap-2 mt-3">
-                <a href="#" className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all" aria-label="GitHub">
+                <a href="#" className="p-1.5 text-gray-600 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all" aria-label="GitHub">
                   <Github className="w-4 h-4" />
                 </a>
-                <a href="#" className="p-1.5 text-gray-400 hover:text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-all" aria-label="Twitter">
+                <a href="#" className="p-1.5 text-gray-600 hover:text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-all" aria-label="Twitter">
                   <Twitter className="w-4 h-4" />
                 </a>
-                <a href="#" className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all" aria-label="LinkedIn">
+                <a href="#" className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all" aria-label="LinkedIn">
                   <Linkedin className="w-4 h-4" />
                 </a>
-                <a href="#" className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all" aria-label="Website">
+                <a href="#" className="p-1.5 text-gray-600 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all" aria-label="Website">
                   <Globe className="w-4 h-4" />
                 </a>
               </div>
@@ -92,7 +92,7 @@ export default function AuthorProfilePage({ params }: AuthorPageProps) {
 
             {/* Follow count + button */}
             <div className="flex flex-col items-end gap-3 shrink-0">
-              <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+              <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-600">
                 <Users className="w-4 h-4" />
                 <span className="font-semibold text-gray-900 dark:text-white">248</span> followers
               </div>
@@ -113,7 +113,7 @@ export default function AuthorProfilePage({ params }: AuthorPageProps) {
               <div key={label} className="text-center">
                 <div className="text-xl mb-0.5">{icon}</div>
                 <div className="text-xl font-bold text-gray-900 dark:text-white">{value}</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">{label}</div>
+                <div className="text-xs text-gray-600 dark:text-gray-600">{label}</div>
               </div>
             ))}
           </div>
@@ -123,7 +123,7 @@ export default function AuthorProfilePage({ params }: AuthorPageProps) {
         <h2 className="section-title mb-6">Articles by {author.name}</h2>
 
         {authorPosts.length === 0 ? (
-          <div className="text-center py-16 text-gray-400">No published articles yet.</div>
+          <div className="text-center py-16 text-gray-600">No published articles yet.</div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {authorPosts.map((post, i) => (

@@ -59,7 +59,7 @@ export function BlogPageContent() {
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-4">
           All <span className="gradient-text">Articles</span>
         </h1>
-        <p className="text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
+        <p className="text-lg text-gray-600 dark:text-gray-600 max-w-2xl mx-auto">
           Explore our collection of articles about web development, design, AI, and more.
         </p>
       </div>
@@ -70,13 +70,13 @@ export function BlogPageContent() {
         <div className="flex items-center gap-2 ml-auto">
           <button
             onClick={() => setView('grid')}
-            className={`p-2 rounded-lg transition-all ${view === 'grid' ? 'bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+            className={`p-2 rounded-lg transition-all ${view === 'grid' ? 'bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400' : 'text-gray-600 hover:text-gray-600 dark:hover:text-gray-300'}`}
           >
             <LayoutGrid className="w-4 h-4" />
           </button>
           <button
             onClick={() => setView('list')}
-            className={`p-2 rounded-lg transition-all ${view === 'list' ? 'bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+            className={`p-2 rounded-lg transition-all ${view === 'list' ? 'bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400' : 'text-gray-600 hover:text-gray-600 dark:hover:text-gray-300'}`}
           >
             <LayoutList className="w-4 h-4" />
           </button>
@@ -90,7 +90,7 @@ export function BlogPageContent() {
       />
 
       {/* Results Info */}
-      <div className="flex items-center gap-2 my-6 text-sm text-gray-500 dark:text-gray-400">
+      <div className="flex items-center gap-2 my-6 text-sm text-gray-600 dark:text-gray-600">
         <ListFilter className="w-4 h-4" />
         <span>
           Showing <strong className="text-gray-900 dark:text-white">{filteredPosts.length}</strong> articles
@@ -120,11 +120,11 @@ export function BlogPageContent() {
         )
       ) : (
         <div className="text-center py-20">
-          <div className="text-6xl mb-4">🔍</div>
+          <div className="text-6xl mb-4">ðŸ”</div>
           <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
             No articles found
           </h3>
-          <p className="text-gray-500 dark:text-gray-400">
+          <p className="text-gray-600 dark:text-gray-600">
             Try adjusting your search or filter criteria.
           </p>
         </div>

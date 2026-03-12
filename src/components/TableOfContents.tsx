@@ -79,7 +79,7 @@ export function TableOfContents({ content }: TableOfContentsProps) {
                   'block text-sm py-0.5 transition-colors duration-150 hover:text-sky-500 dark:hover:text-sky-400',
                   activeId === id
                     ? 'text-sky-500 dark:text-sky-400 font-medium'
-                    : 'text-gray-500 dark:text-gray-400'
+                    : 'text-gray-600 dark:text-gray-600'
                 )}
               >
                 {text}

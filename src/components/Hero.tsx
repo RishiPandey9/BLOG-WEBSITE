@@ -100,7 +100,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="text-lg md:text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed"
+            className="text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed"
           >
             Discover tutorials, insights, and stories from developers around the world.
             Learn, share, and grow with our community.
@@ -136,12 +136,12 @@ export function Hero() {
               <StaggerItem key={stat.label} variant={scaleUp}>
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-2 mb-1">
-                    <stat.icon className={`w-4 h-4 ${stat.color}`} />
+                    <stat.icon className={`w-4 h-4 ${stat.color}`} aria-hidden="true" />
                     <span className="text-2xl font-bold text-gray-900 dark:text-white">
                       {stat.value}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-400 dark:text-gray-500">{stat.label}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-300">{stat.label}</p>
                 </div>
               </StaggerItem>
             ))}

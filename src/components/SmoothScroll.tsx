@@ -16,14 +16,20 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
 
     lenisRef.current = lenis;
 
+    let rafId: number;
     function raf(time: number) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(raf);
     }
+    rafId = requestAnimationFrame(raf);
 
-    requestAnimationFrame(raf);
+    // bfcache fix: pause Lenis on pagehide so browser can cache the page
+    const handlePageHide = () => lenis.destroy();
+    window.addEventListener('pagehide', handlePageHide);
 
     return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('pagehide', handlePageHide);
       lenis.destroy();
     };
   }, []);

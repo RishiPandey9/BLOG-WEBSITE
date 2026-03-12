@@ -41,17 +41,24 @@ export async function generateStaticParams() {
     .map((post) => ({ slug: post.slug }));
 }
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://devblog.vercel.app';
+
 export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
   const post = await getPostBySlugFromFirestore(params.slug);
   if (!post) return { title: 'Post Not Found' };
 
+  const url = `${BASE_URL}/blog/${post.slug}`;
+
   return {
     title: post.title,
     description: post.excerpt,
+    robots: { index: true, follow: true },
+    alternates: { canonical: url },
     openGraph: {
       title: post.title,
       description: post.excerpt,
-      images: [post.coverImage],
+      url,
+      images: [{ url: post.coverImage, width: 1200, height: 630, alt: post.title }],
       type: 'article',
       publishedTime: post.publishedAt,
       authors: [post.author.name],
@@ -143,7 +150,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             href="/blog"
             className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-md rounded-xl text-white hover:bg-white/30 transition-all text-sm font-medium"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4" aria-hidden="true" />
             All Posts
           </Link>
         </div>
@@ -179,13 +186,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 <span className="font-medium text-white">{post.author?.name || 'Anonymous'}</span>
               </div>
               <span className="flex items-center gap-1">
-                <Calendar className="w-3 h-3" /> {formatDate(post.publishedAt)}
+                <Calendar className="w-3 h-3" aria-hidden="true" /> {formatDate(post.publishedAt)}
               </span>
               <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3" /> {post.readingTime} min read
+                <Clock className="w-3 h-3" aria-hidden="true" /> {post.readingTime} min read
               </span>
               <span className="flex items-center gap-1">
-                <Eye className="w-3 h-3" /> {post.views.toLocaleString()} views
+                <Eye className="w-3 h-3" aria-hidden="true" /> {post.views.toLocaleString()} views
               </span>
             </div>
           </div>
@@ -249,7 +256,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             <AnimatedTag key={tag}>
               <Link
                 href={`/tag/${tag.toLowerCase()}`}
-                className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900/30 hover:text-sky-600 dark:hover:text-sky-400 transition-all inline-block"
+                className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-600 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900/30 hover:text-sky-600 dark:hover:text-sky-400 transition-all inline-block"
               >
                 #{tag}
               </Link>
@@ -272,7 +279,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             <div>
               <h3 className="font-bold text-gray-900 dark:text-white hover:text-sky-500 transition-colors">{post.author?.name || 'Anonymous'}</h3>
               <p className="text-xs text-sky-500 font-mono mb-1">@{post.author?.username || 'user'}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{post.author?.bio || ''}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-600">{post.author?.bio || ''}</p>
             </div>
           </div>
         </div>

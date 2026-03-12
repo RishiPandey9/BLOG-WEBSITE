@@ -21,7 +21,7 @@ export function PremiumCTA() {
         <span className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-3 text-sm font-bold text-white shadow-md shadow-amber-300/40 cursor-default select-none">
           ★ You&apos;re already Premium!
         </span>
-        <Link href="/blog" className="text-xs text-gray-400 hover:text-amber-500 transition-colors">
+        <Link href="/blog" className="text-xs text-gray-600 hover:text-amber-500 transition-colors">
           Browse premium articles →
         </Link>
       </div>
@@ -37,7 +37,7 @@ export function PremiumCTA() {
         >
           Sign in to Get Premium
         </Link>
-        <p className="text-xs text-gray-400">You&apos;ll be asked to sign in before payment</p>
+        <p className="text-xs text-gray-600">You&apos;ll be asked to sign in before payment</p>
       </div>
     );
   }
@@ -45,7 +45,7 @@ export function PremiumCTA() {
   return (
     <div className="flex flex-col items-center gap-2">
       <RazorpayCheckoutButton label="Get Premium Access — ₹499/month" />
-      <p className="text-xs text-gray-400">Cancel anytime · Instant access · Secure payment via Razorpay</p>
+      <p className="text-xs text-gray-600">Cancel anytime · Instant access · Secure payment via Razorpay</p>
     </div>
   );
 }

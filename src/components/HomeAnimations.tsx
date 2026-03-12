@@ -46,7 +46,7 @@ export function AnimatedCategoryGrid({ categories }: { categories: Category[] })
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-sky-500 dark:group-hover:text-sky-400 transition-colors">
               {cat.name}
             </h3>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{cat.postCount} posts</p>
+            <p className="text-xs text-gray-600 dark:text-gray-600 mt-1">{cat.postCount} posts</p>
           </Link>
         </StaggerItem>
       ))}
@@ -84,7 +84,7 @@ export function AnimatedTrending({ trendingPosts }: { trendingPosts: BlogPost[] 
                   <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 group-hover:text-sky-500 dark:group-hover:text-sky-400 transition-colors line-clamp-2">
                     {post.title}
                   </h4>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                  <p className="text-xs text-gray-600 dark:text-gray-600 mt-1">
                     {post.views.toLocaleString()} views
                   </p>
                 </div>
@@ -116,7 +116,7 @@ export function AnimatedTagCloud({ tags }: { tags: string[] }) {
             >
               <Link
                 href={`/tag/${tag.toLowerCase()}`}
-                className="px-3 py-1.5 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900/30 hover:text-sky-600 dark:hover:text-sky-400 transition-all inline-block"
+                className="px-3 py-1.5 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-600 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900/30 hover:text-sky-600 dark:hover:text-sky-400 transition-all inline-block"
               >
                 #{tag}
               </Link>
