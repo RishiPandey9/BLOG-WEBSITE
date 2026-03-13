@@ -5,8 +5,6 @@ import { Heart } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import toast from 'react-hot-toast';
 import { cn } from '@/lib/utils';
-import { db } from '@/lib/firebase';
-import { doc, onSnapshot } from 'firebase/firestore';
 
 interface PostLikeButtonProps {
   postId: string;
@@ -18,47 +16,8 @@ export function PostLikeButton({ postId, initialLikes, className }: PostLikeButt
   const { data: session } = useSession();
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(initialLikes);
-  const [realtimeReady, setRealtimeReady] = useState(false);
 
   useEffect(() => {
-    const postRef = doc(db, 'posts', postId);
-    const unsubscribePost = onSnapshot(
-      postRef,
-      (snap) => {
-        if (snap.exists()) {
-          const data = snap.data() as { likes?: number };
-          if (typeof data.likes === 'number') setLikes(data.likes);
-        }
-        setRealtimeReady(true);
-      },
-      () => {
-        setRealtimeReady(false);
-      }
-    );
-
-    let unsubscribeLikeDoc: (() => void) | undefined;
-    const userEmail = session?.user?.email;
-    if (userEmail) {
-      const likeRef = doc(db, 'postLikes', `${postId}_${userEmail}`);
-      unsubscribeLikeDoc = onSnapshot(
-        likeRef,
-        (snap) => {
-          setLiked(snap.exists());
-        },
-        () => {
-          // Keep current liked state and let API fallback drive updates.
-        }
-      );
-    }
-
-    return () => {
-      unsubscribePost();
-      if (unsubscribeLikeDoc) unsubscribeLikeDoc();
-    };
-  }, [postId, session?.user?.email]);
-
-  useEffect(() => {
-    if (realtimeReady) return;
     let isMounted = true;
 
     async function loadLikeStatus() {
@@ -78,7 +37,7 @@ export function PostLikeButton({ postId, initialLikes, className }: PostLikeButt
     return () => {
       isMounted = false;
     };
-  }, [postId, realtimeReady]);
+  }, [postId, session?.user?.email]);
 
   const handleLike = async () => {
     if (!session) {

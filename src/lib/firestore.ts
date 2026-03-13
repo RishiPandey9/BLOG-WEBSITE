@@ -13,6 +13,21 @@ import { PLAN_DURATION_DAYS } from './razorpay';
 
 const allowLocalFallback = process.env.NODE_ENV !== 'production';
 
+function toSlug(input: string): string {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+}
+
+function ensurePostSlug(post: BlogPost): BlogPost {
+  if (post.slug && post.slug.trim().length > 0) return post;
+  const fallback = toSlug(post.title || '') || post.id;
+  return { ...post, slug: fallback };
+}
+
 // ---------------------------------------------
 // Helper - check if Firestore is available
 // ---------------------------------------------
@@ -49,33 +64,61 @@ export async function getPostsFromFirestore(): Promise<BlogPost[]> {
   try {
     const snap = await getAdminDb()!.collection('posts').orderBy('publishedAt', 'desc').get();
     if (snap.empty) return allowLocalFallback ? staticPosts : [];
-    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as BlogPost));
+    return snap.docs.map((d) => ensurePostSlug({ id: d.id, ...d.data() } as BlogPost));
   } catch {
     return allowLocalFallback ? staticPosts : [];
   }
 }
 
 export async function getPostBySlugFromFirestore(slug: string): Promise<BlogPost | null> {
+  let normalizedSlug = slug;
+  try {
+    normalizedSlug = decodeURIComponent(slug);
+  } catch {
+    normalizedSlug = slug;
+  }
+  normalizedSlug = normalizedSlug.trim().toLowerCase();
+
   if (!isDbReady()) {
     // No Firestore: in production we do not use runtime/static fallback.
     if (!allowLocalFallback) return null;
-    return getRuntimePosts().find((p) => p.slug === slug) ?? staticPosts.find((p) => p.slug === slug) ?? null;
+    const local = [...getRuntimePosts(), ...staticPosts]
+      .map((p) => ensurePostSlug(p))
+      .find((p) => p.slug.toLowerCase() === normalizedSlug || p.id === normalizedSlug);
+    return local ?? null;
   }
   try {
-    const snap = await getAdminDb()!.collection('posts').where('slug', '==', slug).limit(1).get();
+    const snap = await getAdminDb()!.collection('posts').where('slug', '==', normalizedSlug).limit(1).get();
     if (!snap.empty) {
       // Firestore is authoritative — always return its version (has up-to-date isPremium, status, etc.)
       const doc = snap.docs[0];
-      return { id: doc.id, ...doc.data() } as BlogPost;
+      return ensurePostSlug({ id: doc.id, ...doc.data() } as BlogPost);
     }
+
+    // Legacy fallback: try direct doc id and then a computed slug match when old docs have missing/invalid slug.
+    const directDoc = await getAdminDb()!.collection('posts').doc(normalizedSlug).get();
+    if (directDoc.exists) {
+      return ensurePostSlug({ id: directDoc.id, ...directDoc.data() } as BlogPost);
+    }
+
+    const allSnap = await getAdminDb()!.collection('posts').get();
+    const legacyMatch = allSnap.docs
+      .map((d) => ensurePostSlug({ id: d.id, ...d.data() } as BlogPost))
+      .find((p) => p.slug.toLowerCase() === normalizedSlug || p.id === normalizedSlug || toSlug(p.title) === normalizedSlug);
+    if (legacyMatch) return legacyMatch;
+
     // Not in Firestore yet — only use local fallbacks in development.
     return allowLocalFallback
-      ? getRuntimePosts().find((p) => p.slug === slug) ?? staticPosts.find((p) => p.slug === slug) ?? null
+      ? [...getRuntimePosts(), ...staticPosts]
+          .map((p) => ensurePostSlug(p))
+          .find((p) => p.slug.toLowerCase() === normalizedSlug || p.id === normalizedSlug) ?? null
       : null;
   } catch {
     // Firestore error — local fallback in development only.
     return allowLocalFallback
-      ? getRuntimePosts().find((p) => p.slug === slug) ?? staticPosts.find((p) => p.slug === slug) ?? null
+      ? [...getRuntimePosts(), ...staticPosts]
+          .map((p) => ensurePostSlug(p))
+          .find((p) => p.slug.toLowerCase() === normalizedSlug || p.id === normalizedSlug) ?? null
       : null;
   }
 }

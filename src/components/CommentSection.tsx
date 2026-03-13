@@ -2,11 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
-import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import { formatRelativeDate } from '@/lib/utils';
 import { getSentimentEmoji, getSentimentColor } from '@/lib/sentiment';
 import { Comment } from '@/types';
-import { db } from '@/lib/firebase';
 import {
   MessageSquare,
   Heart,
@@ -32,7 +30,6 @@ export default function CommentSection({ postId }: CommentSectionProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewSentiment, setPreviewSentiment] = useState<string | null>(null);
-  const [usingRealtime, setUsingRealtime] = useState(false);
 
   const userEmail = session?.user?.email || '';
   const userRole = (session?.user as { role?: string })?.role || 'viewer';
@@ -41,51 +38,26 @@ export default function CommentSection({ postId }: CommentSectionProps) {
   // Fetch comments
   const fetchComments = useCallback(async () => {
     try {
-      const res = await fetch(`/api/comments?postId=${postId}`);
+      const res = await fetch(`/api/comments?postId=${postId}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setComments(data);
       }
     } catch (err) {
-      console.error('Failed to fetch comments:', err);
+      // Ignore abort errors and transient network failures; polling will retry.
+      if (err instanceof Error && err.name === 'AbortError') return;
     } finally {
       setIsLoading(false);
     }
   }, [postId]);
 
   useEffect(() => {
-    const commentsQuery = query(
-      collection(db, 'comments'),
-      where('postId', '==', postId),
-      orderBy('createdAt', 'desc')
-    );
-
-    const unsubscribe = onSnapshot(
-      commentsQuery,
-      (snapshot) => {
-        const liveComments = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...(doc.data() as Omit<Comment, 'id'>),
-        }));
-        setComments(liveComments);
-        setIsLoading(false);
-        setUsingRealtime(true);
-      },
-      async () => {
-        // Firestore listeners can fail if rules/config are missing. Fall back to API fetch.
-        setUsingRealtime(false);
-        await fetchComments();
-      }
-    );
-
-    return () => unsubscribe();
-  }, [postId, fetchComments]);
-
-  useEffect(() => {
-    if (usingRealtime) return;
-    const id = window.setInterval(fetchComments, 5000);
+    void fetchComments();
+    const id = window.setInterval(() => {
+      void fetchComments();
+    }, 10000);
     return () => window.clearInterval(id);
-  }, [usingRealtime, fetchComments]);
+  }, [fetchComments]);
 
   // Live sentiment preview as user types
   useEffect(() => {

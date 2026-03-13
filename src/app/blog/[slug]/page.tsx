@@ -31,7 +31,7 @@ import { authOptions } from '@/lib/auth';
 export const dynamic = 'force-dynamic';
 
 interface BlogPostPageProps {
-  params: { slug: string };
+  params: { slug: string } | Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
@@ -44,7 +44,8 @@ export async function generateStaticParams() {
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://devblog.vercel.app';
 
 export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
-  const post = await getPostBySlugFromFirestore(params.slug);
+  const { slug } = await Promise.resolve(params);
+  const post = await getPostBySlugFromFirestore(slug);
   if (!post) return { title: 'Post Not Found' };
 
   const url = `${BASE_URL}/blog/${post.slug}`;
@@ -74,8 +75,9 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
+  const { slug } = await Promise.resolve(params);
   const [post, session] = await Promise.all([
-    getPostBySlugFromFirestore(params.slug),
+    getPostBySlugFromFirestore(slug),
     getServerSession(authOptions),
   ]);
 
