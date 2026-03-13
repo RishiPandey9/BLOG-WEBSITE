@@ -29,8 +29,8 @@ export function ShareButtons({ title, slug, className }: ShareButtonsProps) {
   };
 
   return (
-    <div className={cn('flex items-center gap-2', className)}>
-      <span className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-600 mr-1">
+    <div className={cn('flex items-center flex-wrap gap-2', className)}>
+      <span className="hidden sm:flex items-center gap-1 text-sm text-gray-600 dark:text-gray-600 mr-1">
         <Share2 className="w-4 h-4" />
         Share
       </span>

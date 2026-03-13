@@ -28,13 +28,13 @@ export function PostCard({ post, featured = false, index = 0 }: PostCardProps) {
       whileHover={{ y: -6, transition: { duration: 0.25 } }}
       className={cn(
         'group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl dark:hover:shadow-gray-900/50 hover:border-sky-300 dark:hover:border-sky-700',
-        featured ? 'md:flex' : ''
+        featured ? 'flex flex-col md:flex-row' : ''
       )}
     >
       {/* Cover Image */}
       <div className={cn(
         'relative overflow-hidden',
-        featured ? 'md:w-2/5 h-56 md:h-auto' : 'h-52'
+        featured ? 'w-full md:w-2/5 h-48 sm:h-56 md:h-auto min-h-[180px]' : 'h-44 sm:h-52'
       )}>
         <Image
           src={post.coverImage}
@@ -79,16 +79,16 @@ export function PostCard({ post, featured = false, index = 0 }: PostCardProps) {
       </div>
 
       {/* Content */}
-      <div className={cn('p-6 flex flex-col', featured ? 'md:w-3/5 justify-center' : '')}>
+      <div className={cn('p-4 sm:p-6 flex flex-col', featured ? 'w-full md:w-3/5 justify-between' : '')}>
         {/* Category + Reading Time */}
-        <div className="flex items-center gap-3 mb-3">
+        <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
           <Badge variant="outline" className={cn(
-            'border-transparent',
+            'border-transparent text-[10px] sm:text-xs',
             categoryColors[post.category] || 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300 hover:bg-sky-200 dark:hover:bg-sky-900/50'
           )}>
             {post.category}
           </Badge>
-          <span className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300">
+          <span className="flex items-center gap-1 text-[10px] sm:text-xs text-gray-600 dark:text-gray-300">
             <Clock className="w-3 h-3" aria-hidden="true" />
             {post.readingTime} min read
           </span>
@@ -98,28 +98,31 @@ export function PostCard({ post, featured = false, index = 0 }: PostCardProps) {
         <Link href={`/blog/${post.slug}`}>
           <h2 className={cn(
             'font-bold text-gray-900 dark:text-white group-hover:text-sky-500 dark:group-hover:text-sky-400 transition-colors line-clamp-2 mb-2',
-            featured ? 'text-2xl' : 'text-lg'
+            featured ? 'text-lg sm:text-xl md:text-2xl' : 'text-base sm:text-lg'
           )}>
             {post.title}
           </h2>
         </Link>
 
-        {/* Excerpt */}
-        <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 mb-4 leading-relaxed">
+        {/* Excerpt - Hide on mobile for featured posts to save space */}
+        <p className={cn(
+          'text-xs sm:text-sm text-gray-700 dark:text-gray-300 line-clamp-2 mb-3 sm:mb-4 leading-relaxed',
+          featured && 'hidden sm:block'
+        )}>
           {post.excerpt}
         </p>
 
         {/* Tags */}
-        <div className="flex flex-wrap gap-1.5 mb-4">
+        <div className="flex flex-wrap gap-1 sm:gap-1.5 mb-3 sm:mb-4">
           {post.tags.slice(0, 3).map((tag) => (
-            <Badge key={tag} variant="secondary" className="text-xs px-2 py-0.5">
+            <Badge key={tag} variant="secondary" className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5">
               #{tag}
             </Badge>
           ))}
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100 dark:border-gray-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 mt-auto pt-3 sm:pt-4 border-t border-gray-100 dark:border-gray-800">
           {/* Author */}
           <div className="flex items-center gap-2">
             <Image
@@ -136,26 +139,26 @@ export function PostCard({ post, featured = false, index = 0 }: PostCardProps) {
           </div>
 
           {/* Stats */}
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300">
-              <Heart className="w-3 h-3 transition-transform group-hover:scale-110" aria-hidden="true" />
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <span className="flex items-center gap-1 text-[10px] sm:text-xs text-gray-600 dark:text-gray-300">
+              <Heart className="w-2.5 h-2.5 sm:w-3 sm:h-3 transition-transform group-hover:scale-110" aria-hidden="true" />
               {post.likes}
             </span>
-            <span className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300">
-              <Eye className="w-3 h-3" aria-hidden="true" />
+            <span className="flex items-center gap-1 text-[10px] sm:text-xs text-gray-600 dark:text-gray-300">
+              <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3" aria-hidden="true" />
               {post.views.toLocaleString()}
             </span>
-            <span className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300">
-              <MessageSquare className="w-3 h-3" aria-hidden="true" />
+            <span className="flex items-center gap-1 text-[10px] sm:text-xs text-gray-600 dark:text-gray-300">
+              <MessageSquare className="w-2.5 h-2.5 sm:w-3 sm:h-3" aria-hidden="true" />
               {post.commentCount}
             </span>
             <Link
               href={`/blog/${post.slug}`}
-              className="flex items-center gap-1 text-xs font-semibold text-sky-500 dark:text-sky-400 hover:text-sky-600 dark:hover:text-sky-300 transition-colors group/link"
+              className="flex items-center gap-1 text-[10px] sm:text-xs font-semibold text-sky-500 dark:text-sky-400 hover:text-sky-600 dark:hover:text-sky-300 transition-colors group/link"
             >
-              {post.isPremium ? <Lock className="w-3 h-3" aria-hidden="true" /> : null}
+              {post.isPremium ? <Lock className="w-2.5 h-2.5 sm:w-3 sm:h-3" aria-hidden="true" /> : null}
               {post.isPremium ? 'Preview' : 'Read'}
-              <ArrowUpRight className="w-3 h-3 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" aria-hidden="true" />
+              <ArrowUpRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" aria-hidden="true" />
             </Link>
           </div>
         </div>

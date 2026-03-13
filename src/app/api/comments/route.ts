@@ -19,6 +19,8 @@ import { analyzeSentiment } from '@/lib/sentiment';
 import { getAdminDb } from '@/lib/firebase-admin';
 import { UserRole } from '@/types';
 
+const allowFallback = process.env.NODE_ENV !== 'production';
+
 function firestoreAvailable(): boolean {
   return getAdminDb() !== null;
 }
@@ -36,7 +38,12 @@ export async function GET(req: NextRequest) {
     if (!session?.user?.role || !isManager(session.user.role as UserRole)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
-    if (!firestoreAvailable()) return NextResponse.json(getCommentStats());
+    if (!firestoreAvailable()) {
+      if (!allowFallback) {
+        return NextResponse.json({ error: 'Persistent datastore is unavailable' }, { status: 503 });
+      }
+      return NextResponse.json(getCommentStats());
+    }
     const allComments = await getAllCommentsFromFirestore();
     const total = allComments.length;
     const approved = allComments.filter((c) => c.status === 'approved').length;
@@ -50,7 +57,12 @@ export async function GET(req: NextRequest) {
     if (!session?.user?.role || !isManager(session.user.role as UserRole)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
-    if (!firestoreAvailable()) return NextResponse.json(getAllComments());
+    if (!firestoreAvailable()) {
+      if (!allowFallback) {
+        return NextResponse.json({ error: 'Persistent datastore is unavailable' }, { status: 503 });
+      }
+      return NextResponse.json(getAllComments());
+    }
     return NextResponse.json(await getAllCommentsFromFirestore());
   }
 
@@ -58,7 +70,12 @@ export async function GET(req: NextRequest) {
     if (!session?.user?.role || !isManager(session.user.role as UserRole)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
-    if (!firestoreAvailable()) return NextResponse.json(getPendingComments(postId || undefined));
+    if (!firestoreAvailable()) {
+      if (!allowFallback) {
+        return NextResponse.json({ error: 'Persistent datastore is unavailable' }, { status: 503 });
+      }
+      return NextResponse.json(getPendingComments(postId || undefined));
+    }
     return NextResponse.json(await getPendingCommentsFromFirestore(postId || undefined));
   }
 
@@ -69,12 +86,15 @@ export async function GET(req: NextRequest) {
     let comments;
     if (firestoreAvailable()) {
       comments = await getCommentsByPostIdFromFirestore(postId);
-      // If Firestore is empty, fall back to in-memory mock data (development mode)
-      if (comments.length === 0) {
+      // If Firestore is empty, fall back to in-memory mock data only in development mode
+      if (allowFallback && comments.length === 0) {
         const inMemory = getCommentsByPostId(postId);
         if (inMemory.length > 0) comments = inMemory;
       }
     } else {
+      if (!allowFallback) {
+        return NextResponse.json({ error: 'Persistent datastore is unavailable' }, { status: 503 });
+      }
       comments = getCommentsByPostId(postId);
     }
 
@@ -131,6 +151,9 @@ export async function POST(req: NextRequest) {
     const comment = await addCommentToFirestore(baseData);
     return NextResponse.json(comment, { status: 201 });
   } catch {
+    if (!allowFallback) {
+      return NextResponse.json({ error: 'Persistent datastore is unavailable for writes' }, { status: 503 });
+    }
     // In-memory fallback: must include sentiment
     const comment = addComment({ ...baseData, sentiment });
     return NextResponse.json(comment, { status: 201 });

@@ -2,15 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* font-display:swap is set via Next.js Inter font config (display:'swap') */
-/* Force font loading to not block rendering — CLS fix */
-@font-face {
-  font-family: 'Inter';
-  font-display: swap;
-}
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-
 @layer base {
   :root {
     --background: 0 0% 100%;

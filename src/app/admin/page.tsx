@@ -547,7 +547,6 @@ export default function AdminPage() {
                   {pendingComments.map((comment) => (
                     <div key={comment.id} className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                       <div className="flex items-start gap-3">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={comment.author?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.author?.name || 'User')}&background=6366f1&color=fff&size=32&format=png`}
                           alt={comment.author?.name || 'User'}
@@ -686,7 +685,6 @@ export default function AdminPage() {
                       const isDelegate = activeDelegations.some((d) => d.userEmail === user.email);
                       return (
                         <div key={user.email} className="flex items-center gap-3 px-4 py-3">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={user.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=6366f1&color=fff&size=32&format=png`}
                             alt={user.name}
@@ -738,7 +736,6 @@ export default function AdminPage() {
                   ) : (
                     subscriberUsers.map((user) => (
                       <div key={user.email} className="flex items-center gap-3 px-4 py-3">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={user.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=f59e0b&color=fff&size=32&format=png`}
                           alt={user.name}

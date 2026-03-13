@@ -4,8 +4,6 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false, // hide X-Powered-By: Next.js
 
-  eslint: { ignoreDuringBuilds: true },
-
   experimental: {
     optimizePackageImports: ['lucide-react', 'date-fns', 'framer-motion'],
   },
@@ -73,14 +71,6 @@ const nextConfig = {
         ],
       },
     ];
-  },
-
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      const existing = Array.isArray(config.externals) ? config.externals : [config.externals].filter(Boolean);
-      config.externals = [...existing, '@next-auth/firebase-adapter'];
-    }
-    return config;
   },
 
   images: {

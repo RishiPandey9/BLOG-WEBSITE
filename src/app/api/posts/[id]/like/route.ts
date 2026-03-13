@@ -5,15 +5,16 @@ import { togglePostLikeInFirestore, getPostLikeStatus } from '@/lib/firestore';
 
 export async function POST(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    const result = await togglePostLikeInFirestore(params.id, session.user.email);
+    const result = await togglePostLikeInFirestore(id, session.user.email);
     return NextResponse.json(result);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to toggle like';
@@ -23,10 +24,11 @@ export async function POST(
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   const userId = session?.user?.email ?? 'anonymous';
-  const result = await getPostLikeStatus(params.id, userId);
+  const result = await getPostLikeStatus(id, userId);
   return NextResponse.json(result);
 }

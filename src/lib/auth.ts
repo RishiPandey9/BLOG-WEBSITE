@@ -85,38 +85,9 @@ async function signInWithEmailPassword(
   };
 }
 
-// Build FirestoreAdapter config only when credentials are present
-function buildFirestoreAdapter() {
-  const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
-  const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
-  const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n');
-
-  if (
-    !projectId ||
-    projectId === 'your_project_id' ||
-    !clientEmail ||
-    !privateKey ||
-    privateKey.includes('YOUR_KEY_HERE')
-  ) {
-    return undefined; // Use default JWT strategy until Firebase is configured
-  }
-
-  try {
-    /* eslint-disable */
-    const { FirestoreAdapter } = require('@next-auth/firebase-adapter');
-    const { cert } = require('firebase-admin/app');
-    /* eslint-enable */
-    return FirestoreAdapter({ credential: cert({ projectId, clientEmail, privateKey }) });
-  } catch {
-    return undefined;
-  }
-}
-
 export const authOptions: NextAuthOptions = {
-  adapter: buildFirestoreAdapter(),
   session: {
-    // Use JWT when no adapter is configured; switch to 'database' once Firebase is set
-    strategy: buildFirestoreAdapter() ? 'database' : 'jwt',
+    strategy: 'jwt',
   },
   providers: [
     GitHubProvider({

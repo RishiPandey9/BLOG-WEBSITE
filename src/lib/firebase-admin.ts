@@ -31,7 +31,7 @@ function getAdminApp(): admin.app.App | null {
     privateKey.includes('YOUR_KEY_HERE')
   ) {
     console.warn(
-      '[Firebase Admin] Missing or placeholder credentials — Firestore operations will fall back to static data until credentials are set in .env.local'
+      '[Firebase Admin] Missing or placeholder credentials. Development may use local fallbacks, but production should provide valid Firestore credentials.'
     );
     return null;
   }

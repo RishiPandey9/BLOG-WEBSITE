@@ -252,7 +252,6 @@ export default function CommentSection({ postId }: CommentSectionProps) {
         {session ? (
           <form onSubmit={handleSubmit}>
             <div className="flex items-start gap-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={session.user?.image || '/default-avatar.png'}
                 alt={session.user?.name || 'User'}
@@ -443,7 +442,6 @@ function CommentCard({
     >
       <div className="flex gap-3">
         {/* Avatar */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={comment.author?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.author?.name || 'User')}&background=6366f1&color=fff&format=png`}
           alt={comment.author?.name || 'User'}

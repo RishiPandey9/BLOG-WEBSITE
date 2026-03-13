@@ -6,7 +6,7 @@ import { PostCard } from '@/components/PostCard';
 import { posts, categories } from '@/lib/data';
 
 // Lazy-load below-fold heavy components to reduce TBT and initial JS payload
-const Newsletter = dynamic(() => import('@/components/Newsletter').then(m => ({ default: m.Newsletter })), { ssr: false });
+const Newsletter = dynamic(() => import('@/components/Newsletter').then(m => ({ default: m.Newsletter })));
 const AnimatedSection = dynamic(() => import('@/components/HomeAnimations').then(m => ({ default: m.AnimatedSection })));
 const AnimatedCategoryGrid = dynamic(() => import('@/components/HomeAnimations').then(m => ({ default: m.AnimatedCategoryGrid })));
 const AnimatedTrending = dynamic(() => import('@/components/HomeAnimations').then(m => ({ default: m.AnimatedTrending })));

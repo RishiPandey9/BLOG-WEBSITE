@@ -11,6 +11,8 @@ import { getAdminDb } from '@/lib/firebase-admin';
 import { isManager } from '@/lib/rbac';
 import { UserRole, CommentStatus } from '@/types';
 
+const allowFallback = process.env.NODE_ENV !== 'production';
+
 function firestoreAvailable(): boolean {
   return getAdminDb() !== null;
 }
@@ -22,8 +24,9 @@ function firestoreAvailable(): boolean {
  */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: 'Must be signed in' }, { status: 401 });
@@ -44,13 +47,19 @@ export async function PATCH(
     try {
       if (firestoreAvailable()) {
         try {
-          await updateCommentStatusInFirestore(params.id, status);
+          await updateCommentStatusInFirestore(id, status);
         } catch {
+          if (!allowFallback) {
+            return NextResponse.json({ error: 'Persistent datastore is unavailable for moderation' }, { status: 503 });
+          }
           // Doc may not exist in Firestore (e.g. in-memory static comment) — fall back
-          moderateComment(params.id, status, session.user.email ?? '');
+          moderateComment(id, status, session.user.email ?? '');
         }
       } else {
-        moderateComment(params.id, status, session.user.email ?? '');
+        if (!allowFallback) {
+          return NextResponse.json({ error: 'Persistent datastore is unavailable for moderation' }, { status: 503 });
+        }
+        moderateComment(id, status, session.user.email ?? '');
       }
 
       // Send email notification when comment is approved
@@ -77,15 +86,21 @@ export async function PATCH(
     try {
       if (firestoreAvailable()) {
         try {
-          const result = await toggleCommentLikeInFirestore(params.id, session.user.email || '');
+          const result = await toggleCommentLikeInFirestore(id, session.user.email || '');
           return NextResponse.json(result);
         } catch {
+          if (!allowFallback) {
+            return NextResponse.json({ error: 'Persistent datastore is unavailable for likes' }, { status: 503 });
+          }
           // Doc may not exist in Firestore — fall back to in-memory
-          const updated = toggleCommentLike(params.id, session.user.email || '');
+          const updated = toggleCommentLike(id, session.user.email || '');
           return NextResponse.json({ liked: (updated?.likedBy ?? []).includes(session.user.email ?? ''), likes: updated?.likes ?? 0 });
         }
       } else {
-        const updated = toggleCommentLike(params.id, session.user.email || '');
+        if (!allowFallback) {
+          return NextResponse.json({ error: 'Persistent datastore is unavailable for likes' }, { status: 503 });
+        }
+        const updated = toggleCommentLike(id, session.user.email || '');
         return NextResponse.json({ liked: (updated?.likedBy ?? []).includes(session.user.email ?? ''), likes: updated?.likes ?? 0 });
       }
     } catch (err: unknown) {
@@ -102,8 +117,9 @@ export async function PATCH(
  */
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: 'Must be signed in' }, { status: 401 });
@@ -117,13 +133,19 @@ export async function DELETE(
   try {
     if (firestoreAvailable()) {
       try {
-        await deleteCommentFromFirestore(params.id);
+        await deleteCommentFromFirestore(id);
       } catch {
+        if (!allowFallback) {
+          return NextResponse.json({ error: 'Persistent datastore is unavailable for delete' }, { status: 503 });
+        }
         // Doc may not exist in Firestore — fall back to in-memory
-        deleteComment(params.id);
+        deleteComment(id);
       }
     } else {
-      deleteComment(params.id);
+      if (!allowFallback) {
+        return NextResponse.json({ error: 'Persistent datastore is unavailable for delete' }, { status: 503 });
+      }
+      deleteComment(id);
     }
     return NextResponse.json({ success: true });
   } catch (err: unknown) {

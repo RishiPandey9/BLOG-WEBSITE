@@ -12,6 +12,8 @@ import { isManager } from '@/lib/rbac';
 import { BlogPost, UserRole } from '@/types';
 import { getAdminDb } from '@/lib/firebase-admin';
 
+const allowFallback = process.env.NODE_ENV !== 'production';
+
 // ─── GET /api/posts ────────────────────────────────────────────────────────────
 // ?mine=true  → only the current user's posts
 // ?all=true   → all posts (manager only, includes pending/draft)
@@ -24,9 +26,14 @@ export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
 
   try {
-    // Combine Firestore posts + in-memory runtime posts (for fallback/new posts)
+    const firestoreIsAvailable = getAdminDb() !== null;
+    if (!firestoreIsAvailable && !allowFallback) {
+      return NextResponse.json({ error: 'Persistent datastore is unavailable' }, { status: 503 });
+    }
+
+    // Combine Firestore posts + in-memory runtime posts (dev fallback only)
     const firestorePosts = await getPostsFromFirestore();
-    const runtimePosts = getRuntimePosts();
+    const runtimePosts = allowFallback ? getRuntimePosts() : [];
 
     // Merge strategy:
     // - When Firestore is available: Firestore is authoritative (has up-to-date isPremium, status).
@@ -34,7 +41,7 @@ export async function GET(req: NextRequest) {
     //   before Firestore persisted them, or when Firestore was temporarily down).
     // - When Firestore is unavailable: getPostsFromFirestore() already returns staticPosts,
     //   runtime posts are prepended (they override static posts for same IDs via runtimeIds set).
-    const firestoreAvailable = getAdminDb() !== null;
+    const firestoreAvailable = firestoreIsAvailable;
     let combined: BlogPost[];
     if (firestoreAvailable) {
       // Firestore first; runtime only for posts that Firestore doesn't have
@@ -73,7 +80,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ posts: published });
   } catch (err) {
     console.error('GET /api/posts error:', err);
-    return NextResponse.json({ posts: staticPosts });
+    if (allowFallback) {
+      return NextResponse.json({ posts: staticPosts });
+    }
+    return NextResponse.json({ error: 'Failed to fetch posts from persistent datastore' }, { status: 503 });
   }
 }
 
@@ -143,6 +153,9 @@ export async function POST(req: NextRequest) {
     const id = await createPostInFirestore(postData);
     return NextResponse.json({ id, ...postData }, { status: 201 });
   } catch {
+    if (!allowFallback) {
+      return NextResponse.json({ error: 'Persistent datastore is unavailable for writes' }, { status: 503 });
+    }
     // Fallback to in-memory store
     const id = `post_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     const post: BlogPost = { id, ...postData };
@@ -166,6 +179,9 @@ export async function DELETE(req: NextRequest) {
   try {
     await deletePostFromFirestore(id);
   } catch {
+    if (!allowFallback) {
+      return NextResponse.json({ error: 'Persistent datastore is unavailable for delete' }, { status: 503 });
+    }
     deleteRuntimePost(id);
   }
 

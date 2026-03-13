@@ -11,6 +11,8 @@ import { posts as staticPosts, categories as staticCategories } from './data';
 import { getRuntimePosts } from './posts-store';
 import { PLAN_DURATION_DAYS } from './razorpay';
 
+const allowLocalFallback = process.env.NODE_ENV !== 'production';
+
 // ---------------------------------------------
 // Helper - check if Firestore is available
 // ---------------------------------------------
@@ -43,19 +45,20 @@ export async function seedFirestore(): Promise<{ seeded: boolean; message: strin
 // POSTS
 // ---------------------------------------------
 export async function getPostsFromFirestore(): Promise<BlogPost[]> {
-  if (!isDbReady()) return staticPosts;
+  if (!isDbReady()) return allowLocalFallback ? staticPosts : [];
   try {
     const snap = await getAdminDb()!.collection('posts').orderBy('publishedAt', 'desc').get();
-    if (snap.empty) return staticPosts;
+    if (snap.empty) return allowLocalFallback ? staticPosts : [];
     return snap.docs.map((d) => ({ id: d.id, ...d.data() } as BlogPost));
   } catch {
-    return staticPosts;
+    return allowLocalFallback ? staticPosts : [];
   }
 }
 
 export async function getPostBySlugFromFirestore(slug: string): Promise<BlogPost | null> {
   if (!isDbReady()) {
-    // No Firestore — check runtime store then static fallback
+    // No Firestore: in production we do not use runtime/static fallback.
+    if (!allowLocalFallback) return null;
     return getRuntimePosts().find((p) => p.slug === slug) ?? staticPosts.find((p) => p.slug === slug) ?? null;
   }
   try {
@@ -65,11 +68,15 @@ export async function getPostBySlugFromFirestore(slug: string): Promise<BlogPost
       const doc = snap.docs[0];
       return { id: doc.id, ...doc.data() } as BlogPost;
     }
-    // Not in Firestore yet — check runtime store (newly created posts) and static data
-    return getRuntimePosts().find((p) => p.slug === slug) ?? staticPosts.find((p) => p.slug === slug) ?? null;
+    // Not in Firestore yet — only use local fallbacks in development.
+    return allowLocalFallback
+      ? getRuntimePosts().find((p) => p.slug === slug) ?? staticPosts.find((p) => p.slug === slug) ?? null
+      : null;
   } catch {
-    // Firestore error — fall back to runtime then static
-    return getRuntimePosts().find((p) => p.slug === slug) ?? staticPosts.find((p) => p.slug === slug) ?? null;
+    // Firestore error — local fallback in development only.
+    return allowLocalFallback
+      ? getRuntimePosts().find((p) => p.slug === slug) ?? staticPosts.find((p) => p.slug === slug) ?? null
+      : null;
   }
 }
 
@@ -211,6 +218,7 @@ export async function getPostLikeStatus(
   userId: string
 ): Promise<{ liked: boolean; likes: number }> {
   if (!isDbReady()) {
+    if (!allowLocalFallback) return { liked: false, likes: 0 };
     const post = staticPosts.find((p) => p.id === postId);
     return { liked: false, likes: post?.likes ?? 0 };
   }

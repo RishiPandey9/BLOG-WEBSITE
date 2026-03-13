@@ -221,7 +221,7 @@ export default function DashboardPage() {
           {/* Post List */}
           <div className="lg:col-span-2">
             {/* Tabs */}
-            <div className="flex items-center gap-1 mb-6 bg-gray-100 dark:bg-gray-900 rounded-xl p-1 w-fit overflow-x-auto">
+            <div className="flex items-center gap-1 mb-6 bg-gray-100 dark:bg-gray-900 rounded-xl p-1 w-full sm:w-fit max-w-full overflow-x-auto">
               {(['all', 'published', 'draft', 'pending_review', 'analytics'] as const).map((tab) => (
                 <button
                   key={tab}
@@ -373,7 +373,7 @@ export default function DashboardPage() {
                     initial={{ opacity: 0, x: -12 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.25, delay: i * 0.04 }}
-                    className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 flex items-start gap-4 hover:shadow-md dark:hover:shadow-gray-900 transition-shadow"
+                    className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-start gap-4 hover:shadow-md dark:hover:shadow-gray-900 transition-shadow"
                   >
                     {/* Cover thumbnail */}
                     <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0">
@@ -399,7 +399,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Quick actions */}
-                    <div className="flex items-center gap-1 shrink-0">
+                    <div className="flex items-center gap-1 shrink-0 self-end sm:self-auto">
                       <Link
                         href={`/blog/${post.slug}`}
                         className="p-1.5 text-gray-600 hover:text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-all"

@@ -215,10 +215,30 @@ export function Navbar() {
               ))}
               {session ? (
                 <>
+                  <Button variant="ghost" size="sm" className="justify-start" asChild onClick={() => setMobileOpen(false)}>
+                    <Link href="/profile">
+                      <Sparkles className="w-4 h-4 mr-2" /> My Profile
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" size="sm" className="justify-start" asChild onClick={() => setMobileOpen(false)}>
+                    <Link href="/dashboard">
+                      <LayoutDashboard className="w-4 h-4 mr-2" /> Dashboard
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" size="sm" className="justify-start" asChild onClick={() => setMobileOpen(false)}>
+                    <Link href="/bookmarks">
+                      <Bookmark className="w-4 h-4 mr-2" /> Saved Posts
+                    </Link>
+                  </Button>
+                  <Button variant="default" size="sm" className="mt-2 w-full" asChild onClick={() => setMobileOpen(false)}>
+                    <Link href="/create">
+                      <PenSquare className="w-4 h-4 mr-2" /> Write Post
+                    </Link>
+                  </Button>
                   {isManager && (
-                    <Button variant="default" size="sm" className="mt-2" asChild onClick={() => setMobileOpen(false)}>
-                      <Link href="/create">
-                        <PenSquare className="w-4 h-4 mr-2" /> Write Post
+                    <Button variant="ghost" size="sm" className="justify-start text-amber-600 dark:text-amber-400" asChild onClick={() => setMobileOpen(false)}>
+                      <Link href="/admin">
+                        <Shield className="w-4 h-4 mr-2" /> Admin Panel
                       </Link>
                     </Button>
                   )}

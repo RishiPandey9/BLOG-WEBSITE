@@ -203,12 +203,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Action Bar */}
         <AnimatedActionBar>
-          <div className="flex flex-wrap items-center justify-between py-4 mb-8 border-b border-gray-200 dark:border-gray-800 gap-3">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-between py-4 mb-8 border-b border-gray-200 dark:border-gray-800 gap-3">
             <div className="flex items-center gap-2">
               <PostLikeButton postId={post.id} initialLikes={post.likes} />
               <BookmarkButton postId={post.id} />
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
               <EditPostButton slug={post.slug} />
               <ShareButtons title={post.title} slug={post.slug} />
             </div>
