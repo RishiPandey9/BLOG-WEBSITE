@@ -1,151 +1,128 @@
-# DevBlog
+# DevBlog — Multi-Author Community Publishing Platform
 
-A multi-author community publishing platform built for SaaS-style operation.
-
-Users can sign in, write posts, submit for moderation, interact through comments/likes/bookmarks, and upgrade to premium content access. Managers/admins moderate content and control publication workflows.
-
-## Current Project State
-
-This repository is currently aligned to a hardened production baseline:
-
-- Next.js 16 App Router with React 19.
-- TypeScript and Tailwind CSS.
-- Firebase Firestore + Firebase Admin for server data.
-- NextAuth-based authentication with OAuth and credentials support.
-- Role-aware content workflow (viewer, delegated admin, manager).
-- Premium subscription flow using Razorpay + webhook verification.
-- Production API behavior hardened to avoid silent in-memory write fallbacks.
-- Responsive behavior improved and documented with a dedicated QA checklist.
-- Local validation completed for the current codebase:
-  - lint passes
-  - production build passes
-  - npm audit --omit=dev reports 0 vulnerabilities
+A full-featured multi-author blogging platform built with Next.js 16 (App Router), TypeScript, NextAuth.js, Tailwind CSS, and Firebase. Anyone can write and submit posts; Managers review and publish them.
 
 ## Live Links
 
-- Production App: https://blog-website-rishi.vercel.app
-- Blog: https://blog-website-rishi.vercel.app/blog
+- **Production App**: https://blog-website-rishi.vercel.app
+- **Blog Page**: https://blog-website-rishi.vercel.app/blog
 
-## Core Features
+![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38bdf8?style=flat-square&logo=tailwind-css)
+![Firebase](https://img.shields.io/badge/Firebase-Firestore-orange?style=flat-square&logo=firebase)
 
-### Publishing and Discovery
+---
 
-- Blog listing with search, category filtering, and sorting.
-- Dynamic post pages with metadata, JSON-LD, reading progress, and related posts.
-- Tag pages and author profile pages.
-- Trending and engagement metrics in dashboard/admin surfaces.
+## Features
 
-### Authoring Workflow
+### Content & Discovery
+- **Blog Listing** - Search by title/tag/author, filter by category, sort, toggle grid/list view
+- **Individual Post Pages** - Parallax hero, reading progress bar, auto-generated Table of Contents, estimated reading time
+- **Tag Pages** - Dedicated `/tag/[tag]` page for every tag
+- **Trending Algorithm** - Score = `views x 0.5 + likes x 2 + comments x 3`
+- **Markdown Rendering** - Syntax-highlighted code blocks with copy-code button
+- **Related Posts** - Auto-suggested articles in the same category
 
-- Post lifecycle:
-  - draft
-  - pending_review
-  - published
-  - rejected
-- Any authenticated user can submit content.
-- Manager/admin roles can approve, reject, edit, publish/unpublish, and delete.
+### Authoring & Workflow
+- **Post Status Flow** - `draft` -> `pending_review` -> `published` / `rejected`
+- **Create Posts** - Any authenticated user can write and submit for review
+- **Edit Posts** - Managers can inline-edit any post with live preview
+- **Author Dashboard** - Stats (posts, views, likes, comments), draft management, quick-edit
+- **Image Uploads** - Cover image uploader integrated into the post editor
 
-### Auth and Access Control
-
-- OAuth providers (GitHub and Google).
-- Credentials sign-in path via Firebase Auth REST.
-- Role resolution using manager email allowlist and delegated admin grants.
-- JWT session strategy.
+### Authentication & Roles
+- **OAuth** - Sign in with GitHub or Google via NextAuth.js v4
+- **Email / Password** - Register and sign in with credentials (Firebase Auth)
+- **Auto-redirect** - Authenticated users visiting `/auth/signin` are redirected to the homepage
+- **RBAC** - Roles resolved at sign-in:
+  - **Manager** - publish/reject/edit posts, moderate comments, access admin panel
+  - **Viewer** - write posts for review, comment, like, bookmark
+  - **Delegated Admin** - time-limited admin access granted by managers
+- **Firestore user sync** - Every sign-in (OAuth or credentials) automatically upserts the user into Firestore so they appear in the admin Users panel
 
 ### Engagement
+- **Comments** - Submit -> pending -> Manager approval; sentiment analysis auto-flags toxic content
+- **Post Likes** - Per-user toggle, API-backed
+- **Bookmarks** - Saved to `localStorage`
+- **Share Buttons** - Twitter, LinkedIn, copy link
 
-- Comment submission and moderation flow.
-- Sentiment analysis for comments.
-- Post likes and bookmarks.
-- Share actions and reading UX components.
+### Admin Panel
+- Comment moderation (approve / reject / delete)
+- Post management (publish / unpublish / delete)
+- Comment sentiment stats dashboard
+- **User management** - full user list (all sign-in providers), premium status, post counts
+- **Delegated admin grants** - assign / revoke temporary admin access with expiry
+- **Revenue stats** - subscriber count, total and monthly revenue (Razorpay)
 
-### Premium SaaS Layer
+### SEO & Performance
+- Dynamic `sitemap.ts` and `robots.ts`
+- JSON-LD Article structured data on every post
+- Open Graph + Twitter Card metadata per post
+- Canonical URLs
+- Skeleton loading cards for perceived performance
+- Framer Motion animations + Lenis smooth scroll (respects `prefers-reduced-motion`)
 
-- Razorpay one-time order creation.
-- Server-side signature verification.
-- Webhook signature verification and subscription activation.
-- Payment history and subscription state in Firestore.
-- Premium paywall component and premium-aware session flags.
-
-### Admin Surfaces
-
-- Comment moderation queue.
-- Post moderation and publication controls.
-- User list with premium/delegation indicators.
-- Delegated admin grant/revoke flows.
-- Revenue and subscriber metrics.
+---
 
 ## Tech Stack
 
-- Framework: Next.js 16 (App Router)
-- UI Runtime: React 19
-- Language: TypeScript
-- Styling: Tailwind CSS 3
-- Auth: NextAuth v4
-- Data: Firebase Firestore + Firebase Admin SDK
-- Payments: Razorpay
-- Email: Resend
-- Animation: Framer Motion + Lenis
-- Testing Tooling: Vitest + Testing Library helpers
-- Linting: ESLint CLI
+| Technology | Purpose |
+|---|---|
+| Next.js 16 (App Router) | React framework, SSR & API routes |
+| TypeScript | Type safety |
+| NextAuth.js v4 | GitHub + Google OAuth, JWT sessions |
+| Tailwind CSS 3.4 | Utility-first styling, dark mode via `class` |
+| Firebase / Firestore | Persistent data store |
+| Firebase Admin SDK | Server-side Firestore access |
+| Framer Motion | Scroll animations |
+| Lenis | Smooth scroll |
+| Lucide React | Icon library |
+| React Hot Toast | Toast notifications |
+| Resend | Transactional email |
 
-## Project Structure
+---
 
-src/
-- app/
-  - API routes under app/api
-  - page routes, auth, admin, dashboard, blog, pricing, etc.
-- components/
-  - page and UI components
-- hooks/
-- lib/
-  - auth, firestore, cloudinary, payments, sentiment, utilities
-- types/
+## Getting Started
 
-docs/testing/
-- TESTING_IMPLEMENTATION_PLAN.md
-- EXECUTION_BACKLOG.md
-- COVERAGE_MATRIX.md
-- EXECUTION_TRACKER.md
-- RESPONSIVE_QA_CHECKLIST.md
+### Prerequisites
 
-## Prerequisites
-
-- Node.js 20.9.0+
+- Node.js 18+
 - npm
-- Firebase project with Firestore enabled
-- OAuth credentials for GitHub and Google
-- Razorpay account for payments
-- Optional: Resend account for transactional emails
-- Optional: Cloudinary account for image uploads
+- A Firebase project with Firestore enabled
+- GitHub and/or Google OAuth app credentials
 
-## Setup
-
-1. Install dependencies:
+### Installation
 
 ```bash
 npm install
 ```
 
-2. Create .env.local in project root:
+### Environment Variables
+
+Create a `.env.local` file in the project root:
 
 ```env
 NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your_nextauth_secret
+NEXTAUTH_SECRET=your-secret-here
 
-NEXT_PUBLIC_BASE_URL=http://localhost:3000
-
+# GitHub OAuth — https://github.com/settings/developers
 GITHUB_ID=your_github_client_id
 GITHUB_SECRET=your_github_client_secret
+
+# Google OAuth — https://console.cloud.google.com
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 
+# Manager emails (comma-separated) — these users get the Manager role
 MANAGER_EMAILS=admin@example.com,you@example.com
 
+# Firebase Admin SDK
 FIREBASE_ADMIN_PROJECT_ID=your_project_id
 FIREBASE_ADMIN_CLIENT_EMAIL=your_service_account_email
 FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 
+# Firebase Client SDK (public)
 NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
@@ -153,75 +130,188 @@ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 
+# Resend (optional — for email notifications)
+RESEND_API_KEY=your_resend_api_key
+
+# Razorpay (required for premium payments)
 RAZORPAY_KEY_ID=your_razorpay_key_id
 RAZORPAY_KEY_SECRET=your_razorpay_key_secret
-RAZORPAY_WEBHOOK_SECRET=your_razorpay_webhook_secret
+RAZORPAY_WEBHOOK_SECRET=your_webhook_secret
 
-RESEND_API_KEY=your_resend_api_key
-RESEND_FROM_EMAIL=notifications@yourdomain.com
-
+# Cloudinary (required for image uploads via /api/upload)
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 ```
 
-3. Run development server:
+### Production OAuth Setup (Required)
+
+For production login to work, update OAuth app settings with your deployed domain.
+
+GitHub OAuth app (`https://github.com/settings/developers`):
+
+- Homepage URL: `https://blog-website-rishi.vercel.app`
+- Authorization callback URL: `https://blog-website-rishi.vercel.app/api/auth/callback/github`
+
+Google OAuth client (`https://console.cloud.google.com/apis/credentials`):
+
+- Authorized JavaScript origins:
+  - `https://blog-website-rishi.vercel.app`
+  - `http://localhost:3000`
+- Authorized redirect URIs:
+  - `https://blog-website-rishi.vercel.app/api/auth/callback/google`
+  - `http://localhost:3000/api/auth/callback/google`
+
+Ensure Vercel production env has:
+
+- `NEXTAUTH_URL=https://blog-website-rishi.vercel.app`
+- valid `GITHUB_ID`, `GITHUB_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+
+### Seed Firestore (optional)
+
+```bash
+# Populates Firestore with the static sample posts from lib/data.ts
+GET /api/seed
+```
+
+### Development
 
 ```bash
 npm run dev
 ```
 
-4. Build and run production locally:
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Production Build
 
 ```bash
 npm run build
 npm start
 ```
 
-## Scripts
+---
 
-- npm run dev
-  - starts local development server
-- npm run build
-  - builds production app
-- npm start
-  - starts production server from build output
-- npm run lint
-  - runs ESLint over JS/TS/TSX files
+## Project Structure
 
-## Production Notes
+```
+src/
+├── app/
+│   ├── page.tsx                  # Home (hero, featured, categories, trending)
+│   ├── blog/
+│   │   ├── page.tsx              # Blog listing (search, filter, grid/list)
+│   │   └── [slug]/
+│   │       ├── page.tsx          # Post view (parallax, TOC, comments, likes)
+│   │       └── edit/             # Edit post (Manager only)
+│   ├── create/                   # Create new post
+│   ├── dashboard/                # Author dashboard
+│   ├── admin/                    # Admin panel (comments, posts moderation)
+│   ├── u/[username]/             # Public author profile
+│   ├── tag/[tag]/                # All posts for a tag
+│   ├── profile/                  # Signed-in user's own profile
+│   ├── bookmarks/                # Saved bookmarks page
+│   ├── contact/                  # Contact form
+│   ├── auth/signin/              # OAuth sign-in
+│   ├── auth/signup/              # Sign-up
+│   ├── api/
+│   │   ├── auth/[...nextauth]/   # NextAuth handler
+│   │   ├── posts/                # CRUD posts
+│   │   │   └── [id]/like/        # Toggle post like
+│   │   ├── comments/             # CRUD + moderate comments
+│   │   ├── bookmarks/            # Get / toggle bookmarks
+│   │   ├── upload/               # Image upload
+│   │   └── seed/                 # Seed Firestore
+│   ├── sitemap.ts                # Dynamic SEO sitemap
+│   └── robots.ts                 # robots.txt
+├── components/
+│   ├── Navbar.tsx                # Global nav
+│   ├── Hero.tsx                  # Parallax hero with floating particles
+│   ├── PostCard.tsx              # Animated post card with status badge
+│   ├── BlogContent.tsx           # Markdown renderer with copy-code buttons
+│   ├── BlogPageContent.tsx       # Blog listing client wrapper
+│   ├── CommentSection.tsx        # Full comment system
+│   ├── TableOfContents.tsx       # Auto-generated TOC from headings
+│   ├── ReadingProgressBar.tsx    # Fixed top progress bar
+│   ├── BookmarkButton.tsx        # Toggle bookmark
+│   ├── PostLikeButton.tsx        # Like / unlike a post
+│   ├── ShareButtons.tsx          # Share to Twitter, LinkedIn, copy link
+│   ├── EditPostForm.tsx          # Inline post editor with preview
+│   ├── ImageUploader.tsx         # Cover image uploader
+│   ├── SkeletonCard.tsx          # Loading skeleton
+│   ├── Footer.tsx                # Animated footer
+│   ├── Newsletter.tsx            # Newsletter signup
+│   ├── SearchBar.tsx             # Debounced search input
+│   ├── CategoryFilter.tsx        # Category pill filter
+│   └── motion.tsx                # Framer Motion reusable components
+├── hooks/
+│   └── useRole.ts                # RBAC role hook
+├── lib/
+│   ├── auth.ts                   # NextAuth config + role resolver
+│   ├── data.ts                   # Static seed data (fallback)
+│   ├── firestore.ts              # Firestore service layer
+│   ├── firebase.ts               # Firebase client SDK init
+│   ├── firebase-admin.ts         # Firebase Admin SDK init
+│   ├── posts-store.ts            # In-memory runtime post store (fallback)
+│   ├── comments.ts               # In-memory comment store (fallback)
+│   ├── sentiment.ts              # Keyword-based sentiment analysis
+│   ├── rbac.ts                   # Permission helpers
+│   ├── resend.ts                 # Email service
+│   └── utils.ts                  # cn(), formatDate(), categoryColors, ...
+└── types/
+    ├── index.ts                  # All TypeScript interfaces and types
+    └── next-auth.d.ts            # NextAuth session type augmentation
+```
 
-- The app enforces safer production behavior for content APIs:
-  - if persistent datastore is unavailable, production write paths return errors instead of silently writing to in-memory stores.
-- Seed endpoint:
-  - GET /api/seed is blocked in production.
-  - use authenticated manager POST flow where applicable.
-- Payment security:
-  - webhook verification requires RAZORPAY_WEBHOOK_SECRET.
-  - payment verification is performed server-side.
+---
 
-## Responsive QA
+## Role-Based Access Control
 
-Use docs/testing/RESPONSIVE_QA_CHECKLIST.md before release to verify behavior across:
+| Action | Viewer | Manager |
+|---|---|---|
+| Read published posts | ✅ | ✅ |
+| Submit post for review | ✅ | ✅ |
+| Publish / reject posts | ❌ | ✅ |
+| Edit any post | ❌ | ✅ |
+| Comment on posts | ✅ | ✅ |
+| Like / bookmark posts | ✅ | ✅ |
+| Approve / reject comments | ❌ | ✅ |
+| Access admin panel | ❌ | ✅ |
 
-- Mobile small and standard
-- Tablet
-- Laptop
-- Desktop
+Managers are determined by the `MANAGER_EMAILS` environment variable, resolved at JWT sign-in time.
 
-Checklist includes global checks, route-by-route checks, and execution steps.
+Delegated Admin is also supported. Managers can grant temporary admin access to any user for a configurable duration from the admin panel.
 
-## Testing Planning Docs
+---
 
-The repository includes a test planning package in docs/testing:
+## Post Status Workflow
 
-- TESTING_IMPLEMENTATION_PLAN.md
-- EXECUTION_BACKLOG.md
-- COVERAGE_MATRIX.md
-- EXECUTION_TRACKER.md
+```
+[Viewer writes] → DRAFT
+      ↓ Submit for review
+   PENDING_REVIEW
+      ↓ Manager approves         ↓ Manager rejects
+   PUBLISHED                  REJECTED
+```
 
-Use these for rollout planning and evidence tracking.
+---
 
 ## License
 
 MIT
+
+---
+
+## Testing Strategy Package
+
+The repository includes an execution-ready testing planning package:
+
+- `docs/testing/TESTING_IMPLEMENTATION_PLAN.md`
+- `docs/testing/EXECUTION_BACKLOG.md`
+- `docs/testing/COVERAGE_MATRIX.md`
+- `docs/testing/EXECUTION_TRACKER.md`
+
+Use these files together:
+
+1. Read the strategy in `docs/testing/TESTING_IMPLEMENTATION_PLAN.md`.
+2. Execute in phase order via `docs/testing/EXECUTION_BACKLOG.md`.
+3. Validate route/module/workflow scope from `docs/testing/COVERAGE_MATRIX.md`.
+4. Track progress and sign-off evidence in `docs/testing/EXECUTION_TRACKER.md`.
