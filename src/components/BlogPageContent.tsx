@@ -120,7 +120,7 @@ export function BlogPageContent() {
         )
       ) : (
         <div className="text-center py-20">
-          <div className="text-6xl mb-4">ðŸ”</div>
+          <div className="text-3xl mb-4">Search</div>
           <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
             No articles found
           </h3>

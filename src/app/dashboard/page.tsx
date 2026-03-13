@@ -116,7 +116,7 @@ export default function DashboardPage() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen pt-24 flex flex-col items-center justify-center text-center px-4">
-        <div className="text-6xl mb-4">ðŸ”’</div>
+        <div className="text-6xl mb-4">Locked</div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Sign in to view your dashboard</h1>
         <Link href="/auth/signin" className="btn-primary mt-6">Sign In</Link>
       </div>
@@ -148,6 +148,8 @@ export default function DashboardPage() {
     return acc;
   }, {});
   const sortedCategories = Object.entries(categoryDist).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const rawFirstName = session?.user?.name?.trim().split(/\s+/)[0] ?? '';
+  const firstName = /[\u00C3\u00E2\u00F0]/.test(rawFirstName) ? '' : rawFirstName;
 
   return (
     <div className="min-h-screen pt-24 pb-16">
@@ -172,7 +174,7 @@ export default function DashboardPage() {
             )}
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Welcome back, {session?.user?.name?.split(' ')[0]} ðŸ‘‹
+                Welcome back{firstName ? `, ${firstName}` : ''}
               </h1>
               <p className="text-gray-600 dark:text-gray-600 text-sm">Here&apos;s your content overview</p>
             </div>
@@ -231,7 +233,7 @@ export default function DashboardPage() {
                       : 'text-gray-600 dark:text-gray-600 hover:text-gray-700 dark:hover:text-gray-200'
                   )}
                 >
-                  {tab === 'pending_review' ? 'In Review' : tab === 'analytics' ? 'ðŸ“Š Analytics' : tab}
+                  {tab === 'pending_review' ? 'In Review' : tab === 'analytics' ? 'Analytics' : tab}
                 </button>
               ))}
             </div>
@@ -466,7 +468,7 @@ export default function DashboardPage() {
                               {new Date(rec.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                             </span>
                             <span className={cn('font-semibold', rec.status === 'SUCCESS' ? 'text-green-600 dark:text-green-400' : 'text-red-500')}>
-                              {rec.status === 'SUCCESS' ? `â‚¹${(rec.amountPaid / 100).toFixed(0)}` : 'Failed'}
+                              {rec.status === 'SUCCESS' ? `INR ${(rec.amountPaid / 100).toFixed(0)}` : 'Failed'}
                             </span>
                           </div>
                         ))}
@@ -479,7 +481,7 @@ export default function DashboardPage() {
                       disabled={cancellingSubscription}
                       className="w-full rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-3 py-2 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 disabled:opacity-60 transition-all"
                     >
-                      {cancellingSubscription ? 'Cancellingâ€¦' : 'Cancel Subscription'}
+                      {cancellingSubscription ? 'Cancelling...' : 'Cancel Subscription'}
                     </button>
                   )}
                 </div>
@@ -502,7 +504,7 @@ export default function DashboardPage() {
                   <p className="text-xs text-gray-600 dark:text-gray-600">
                     Upgrade to unlock all premium articles.
                   </p>
-                  <RazorpayCheckoutButton label="Upgrade â€” â‚¹499/mo" className="w-full justify-center text-xs py-2.5" />
+                  <RazorpayCheckoutButton label="Upgrade - INR 499/mo" className="w-full justify-center text-xs py-2.5" />
                 </div>
               )}
             </div>
@@ -567,7 +569,7 @@ export default function DashboardPage() {
                   ))}
               </div>
               <p className="text-xs text-gray-600 dark:text-gray-600 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
-                Score = viewsÃ—0.5 + likesÃ—2 + commentsÃ—3
+                Score = views x 0.5 + likes x 2 + comments x 3
               </p>
             </div>
 

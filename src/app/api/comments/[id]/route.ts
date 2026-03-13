@@ -16,7 +16,7 @@ function firestoreAvailable(): boolean {
 }
 
 /**
- * PATCH /api/comments/[id] â€” moderate or like a comment
+ * PATCH /api/comments/[id] - moderate or like a comment
  * Body: { action: 'moderate', status: 'approved'|'rejected' }
  *   or: { action: 'like' }
  */
@@ -98,7 +98,7 @@ export async function PATCH(
 }
 
 /**
- * DELETE /api/comments/[id] â€” delete a comment (manager only)
+ * DELETE /api/comments/[id] - delete a comment (manager only)
  */
 export async function DELETE(
   _req: NextRequest,

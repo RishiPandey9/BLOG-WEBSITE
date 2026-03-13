@@ -408,7 +408,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
   );
 }
 
-// â”€â”€â”€ Individual Comment Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Individual Comment Card
 
 interface CommentCardProps {
   comment: Comment;
@@ -562,7 +562,7 @@ function CommentCard({
             {/* Moderation info */}
             {comment.moderatedBy && isManager && (
               <span className="text-xs text-gray-600 ml-auto">
-                {comment.status === 'approved' ? 'âœ“' : 'âœ—'} by {comment.moderatedBy}
+                {comment.status === 'approved' ? 'Approved' : 'Rejected'} by {comment.moderatedBy}
               </span>
             )}
           </div>
