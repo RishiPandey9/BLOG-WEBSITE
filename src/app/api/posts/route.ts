@@ -27,9 +27,6 @@ export async function GET(req: NextRequest) {
 
   try {
     const firestoreIsAvailable = getAdminDb() !== null;
-    if (!firestoreIsAvailable && !allowFallback) {
-      return NextResponse.json({ error: 'Persistent datastore is unavailable' }, { status: 503 });
-    }
 
     // Combine Firestore posts + in-memory runtime posts (dev fallback only)
     const firestorePosts = await getPostsFromFirestore();
@@ -80,10 +77,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ posts: published });
   } catch (err) {
     console.error('GET /api/posts error:', err);
-    if (allowFallback) {
-      return NextResponse.json({ posts: staticPosts });
-    }
-    return NextResponse.json({ error: 'Failed to fetch posts from persistent datastore' }, { status: 503 });
+    return NextResponse.json({ posts: staticPosts });
   }
 }
 

@@ -60,13 +60,13 @@ export async function seedFirestore(): Promise<{ seeded: boolean; message: strin
 // POSTS
 // ---------------------------------------------
 export async function getPostsFromFirestore(): Promise<BlogPost[]> {
-  if (!isDbReady()) return allowLocalFallback ? staticPosts : [];
+  if (!isDbReady()) return staticPosts;
   try {
     const snap = await getAdminDb()!.collection('posts').orderBy('publishedAt', 'desc').get();
-    if (snap.empty) return allowLocalFallback ? staticPosts : [];
+    if (snap.empty) return staticPosts;
     return snap.docs.map((d) => ensurePostSlug({ id: d.id, ...d.data() } as BlogPost));
   } catch {
-    return allowLocalFallback ? staticPosts : [];
+    return staticPosts;
   }
 }
 
@@ -80,8 +80,6 @@ export async function getPostBySlugFromFirestore(slug: string): Promise<BlogPost
   normalizedSlug = normalizedSlug.trim().toLowerCase();
 
   if (!isDbReady()) {
-    // No Firestore: in production we do not use runtime/static fallback.
-    if (!allowLocalFallback) return null;
     const local = [...getRuntimePosts(), ...staticPosts]
       .map((p) => ensurePostSlug(p))
       .find((p) => p.slug.toLowerCase() === normalizedSlug || p.id === normalizedSlug);
@@ -107,19 +105,15 @@ export async function getPostBySlugFromFirestore(slug: string): Promise<BlogPost
       .find((p) => p.slug.toLowerCase() === normalizedSlug || p.id === normalizedSlug || toSlug(p.title) === normalizedSlug);
     if (legacyMatch) return legacyMatch;
 
-    // Not in Firestore yet — only use local fallbacks in development.
-    return allowLocalFallback
-      ? [...getRuntimePosts(), ...staticPosts]
-          .map((p) => ensurePostSlug(p))
-          .find((p) => p.slug.toLowerCase() === normalizedSlug || p.id === normalizedSlug) ?? null
-      : null;
+    // Not found in Firestore — allow local/static fallback so production still serves seed content.
+    return [...getRuntimePosts(), ...staticPosts]
+      .map((p) => ensurePostSlug(p))
+      .find((p) => p.slug.toLowerCase() === normalizedSlug || p.id === normalizedSlug) ?? null;
   } catch {
-    // Firestore error — local fallback in development only.
-    return allowLocalFallback
-      ? [...getRuntimePosts(), ...staticPosts]
-          .map((p) => ensurePostSlug(p))
-          .find((p) => p.slug.toLowerCase() === normalizedSlug || p.id === normalizedSlug) ?? null
-      : null;
+    // Firestore error — use local/static fallback to avoid production 404s.
+    return [...getRuntimePosts(), ...staticPosts]
+      .map((p) => ensurePostSlug(p))
+      .find((p) => p.slug.toLowerCase() === normalizedSlug || p.id === normalizedSlug) ?? null;
   }
 }
 
