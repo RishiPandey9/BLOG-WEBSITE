@@ -32,7 +32,69 @@ interface BlogContentProps {
   content: string;
 }
 
+function decodeHtmlEntities(input: string): string {
+  if (!input) return input;
+
+  const decodeOnce = (value: string): string => {
+    if (typeof window !== 'undefined') {
+      const textarea = document.createElement('textarea');
+      textarea.innerHTML = value;
+      return textarea.value;
+    }
+
+    return value
+      .replace(/&amp;/gi, '&')
+      .replace(/&lt;/gi, '<')
+      .replace(/&gt;/gi, '>')
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;/gi, "'")
+      .replace(/&#x2F;/gi, '/')
+      .replace(/&#(\d+);/g, (_, code: string) => String.fromCharCode(Number(code)))
+      .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)));
+  };
+
+  let decoded = input;
+  for (let i = 0; i < 3; i += 1) {
+    const next = decodeOnce(decoded);
+    if (next === decoded) break;
+    decoded = next;
+  }
+
+  return decoded;
+}
+
+function looksLikeHtml(input: string): boolean {
+  return /<\/?[a-z][\s\S]*>/i.test(input);
+}
+
+function sanitizeHtml(input: string): string {
+  // Lightweight sanitizer for in-app rich text content.
+  // Removes script/style/iframe/object/embed tags and inline event handlers.
+  return input
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, '')
+    .replace(/<iframe[\s\S]*?>[\s\S]*?<\/iframe>/gi, '')
+    .replace(/<object[\s\S]*?>[\s\S]*?<\/object>/gi, '')
+    .replace(/<embed[\s\S]*?>[\s\S]*?<\/embed>/gi, '')
+    .replace(/\son[a-z]+\s*=\s*"[^"]*"/gi, '')
+    .replace(/\son[a-z]+\s*=\s*'[^']*'/gi, '')
+    .replace(/\son[a-z]+\s*=\s*[^\s>]+/gi, '')
+    .replace(/javascript:/gi, '');
+}
+
 export function BlogContent({ content }: BlogContentProps) {
+  const decodedContent = decodeHtmlEntities(content);
+  const isHtml = looksLikeHtml(decodedContent);
+
+  if (isHtml) {
+    return (
+      <article
+        className="prose prose-lg prose-gray dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-code:text-sky-600 dark:prose-code:text-sky-400 prose-pre:bg-gray-900 dark:prose-pre:bg-gray-800 prose-pre:border prose-pre:border-gray-800 prose-pre:rounded-xl prose-a:text-sky-500 hover:prose-a:text-sky-600 prose-blockquote:border-sky-500 prose-img:rounded-xl"
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(decodedContent) }}
+      />
+    );
+  }
+
   return (
     <article className="prose prose-lg prose-gray dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-code:text-sky-600 dark:prose-code:text-sky-400 prose-pre:bg-gray-900 dark:prose-pre:bg-gray-800 prose-pre:border prose-pre:border-gray-800 prose-pre:rounded-xl prose-a:text-sky-500 hover:prose-a:text-sky-600 prose-blockquote:border-sky-500 prose-img:rounded-xl">
       <ReactMarkdown
@@ -112,7 +174,7 @@ export function BlogContent({ content }: BlogContentProps) {
           ),
         }}
       >
-        {content}
+        {decodedContent}
       </ReactMarkdown>
     </article>
   );

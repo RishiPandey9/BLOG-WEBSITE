@@ -28,6 +28,39 @@ function ensurePostSlug(post: BlogPost): BlogPost {
   return { ...post, slug: fallback };
 }
 
+function decodeEscapedHtmlIfNeeded(content: string): string {
+  if (!content) return content;
+  const hasEscapedTags = /&(amp;)?lt;\/?[a-z]/i.test(content) || /&#x?0*3c;/i.test(content);
+  if (!hasEscapedTags) return content;
+
+  const decodeOnce = (value: string): string =>
+    value
+      .replace(/&amp;/gi, '&')
+      .replace(/&lt;/gi, '<')
+      .replace(/&gt;/gi, '>')
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;/gi, "'")
+      .replace(/&#x2F;/gi, '/')
+      .replace(/&#(\d+);/g, (_, code: string) => String.fromCharCode(Number(code)))
+      .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)));
+
+  let decoded = content;
+  for (let i = 0; i < 4; i += 1) {
+    const next = decodeOnce(decoded);
+    if (next === decoded) break;
+    decoded = next;
+  }
+
+  return decoded;
+}
+
+function normalizePostContent(post: BlogPost): BlogPost {
+  return {
+    ...post,
+    content: decodeEscapedHtmlIfNeeded(post.content),
+  };
+}
+
 // ---------------------------------------------
 // Helper - check if Firestore is available
 // ---------------------------------------------
@@ -64,7 +97,7 @@ export async function getPostsFromFirestore(): Promise<BlogPost[]> {
   try {
     const snap = await getAdminDb()!.collection('posts').orderBy('publishedAt', 'desc').get();
     if (snap.empty) return staticPosts;
-    return snap.docs.map((d) => ensurePostSlug({ id: d.id, ...d.data() } as BlogPost));
+    return snap.docs.map((d) => normalizePostContent(ensurePostSlug({ id: d.id, ...d.data() } as BlogPost)));
   } catch {
     return staticPosts;
   }
@@ -81,7 +114,7 @@ export async function getPostBySlugFromFirestore(slug: string): Promise<BlogPost
 
   if (!isDbReady()) {
     const local = [...getRuntimePosts(), ...staticPosts]
-      .map((p) => ensurePostSlug(p))
+      .map((p) => normalizePostContent(ensurePostSlug(p)))
       .find((p) => p.slug.toLowerCase() === normalizedSlug || p.id === normalizedSlug);
     return local ?? null;
   }
@@ -90,30 +123,56 @@ export async function getPostBySlugFromFirestore(slug: string): Promise<BlogPost
     if (!snap.empty) {
       // Firestore is authoritative — always return its version (has up-to-date isPremium, status, etc.)
       const doc = snap.docs[0];
-      return ensurePostSlug({ id: doc.id, ...doc.data() } as BlogPost);
+      return normalizePostContent(ensurePostSlug({ id: doc.id, ...doc.data() } as BlogPost));
     }
 
     // Legacy fallback: try direct doc id and then a computed slug match when old docs have missing/invalid slug.
     const directDoc = await getAdminDb()!.collection('posts').doc(normalizedSlug).get();
     if (directDoc.exists) {
-      return ensurePostSlug({ id: directDoc.id, ...directDoc.data() } as BlogPost);
+      return normalizePostContent(ensurePostSlug({ id: directDoc.id, ...directDoc.data() } as BlogPost));
     }
 
     const allSnap = await getAdminDb()!.collection('posts').get();
     const legacyMatch = allSnap.docs
-      .map((d) => ensurePostSlug({ id: d.id, ...d.data() } as BlogPost))
+      .map((d) => normalizePostContent(ensurePostSlug({ id: d.id, ...d.data() } as BlogPost)))
       .find((p) => p.slug.toLowerCase() === normalizedSlug || p.id === normalizedSlug || toSlug(p.title) === normalizedSlug);
     if (legacyMatch) return legacyMatch;
 
     // Not found in Firestore — allow local/static fallback so production still serves seed content.
     return [...getRuntimePosts(), ...staticPosts]
-      .map((p) => ensurePostSlug(p))
+      .map((p) => normalizePostContent(ensurePostSlug(p)))
       .find((p) => p.slug.toLowerCase() === normalizedSlug || p.id === normalizedSlug) ?? null;
   } catch {
     // Firestore error — use local/static fallback to avoid production 404s.
     return [...getRuntimePosts(), ...staticPosts]
-      .map((p) => ensurePostSlug(p))
+      .map((p) => normalizePostContent(ensurePostSlug(p)))
       .find((p) => p.slug.toLowerCase() === normalizedSlug || p.id === normalizedSlug) ?? null;
+  }
+}
+
+export async function getPostByIdFromFirestore(id: string): Promise<BlogPost | null> {
+  const normalizedId = id.trim();
+
+  if (!isDbReady()) {
+    const local = [...getRuntimePosts(), ...staticPosts]
+      .map((p) => normalizePostContent(ensurePostSlug(p)))
+      .find((p) => p.id === normalizedId);
+    return local ?? null;
+  }
+
+  try {
+    const doc = await getAdminDb()!.collection('posts').doc(normalizedId).get();
+    if (doc.exists) {
+      return normalizePostContent(ensurePostSlug({ id: doc.id, ...doc.data() } as BlogPost));
+    }
+
+    return [...getRuntimePosts(), ...staticPosts]
+      .map((p) => normalizePostContent(ensurePostSlug(p)))
+      .find((p) => p.id === normalizedId) ?? null;
+  } catch {
+    return [...getRuntimePosts(), ...staticPosts]
+      .map((p) => normalizePostContent(ensurePostSlug(p)))
+      .find((p) => p.id === normalizedId) ?? null;
   }
 }
 

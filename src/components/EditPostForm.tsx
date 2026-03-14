@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { BlogContent } from '@/components/BlogContent';
 import { ImageUploader } from '@/components/ImageUploader';
+import { TipTapEditor } from '@/components/TipTapEditor';
 import { categories } from '@/lib/data';
 import { useRole } from '@/hooks/useRole';
 import type { BlogPost } from '@/types';
@@ -19,18 +20,51 @@ interface EditPostFormProps {
   post: BlogPost;
 }
 
+function decodeHtmlEntities(input: string): string {
+  const decodeOnce = (value: string): string => {
+    if (typeof window !== 'undefined') {
+      const textarea = document.createElement('textarea');
+      textarea.innerHTML = value;
+      return textarea.value;
+    }
+
+    return value
+      .replace(/&amp;/gi, '&')
+      .replace(/&lt;/gi, '<')
+      .replace(/&gt;/gi, '>')
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;/gi, "'")
+      .replace(/&#x2F;/gi, '/')
+      .replace(/&#(\d+);/g, (_, code: string) => String.fromCharCode(Number(code)))
+      .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)));
+  };
+
+  let decoded = input;
+  for (let i = 0; i < 3; i += 1) {
+    const next = decodeOnce(decoded);
+    if (next === decoded) break;
+    decoded = next;
+  }
+
+  return decoded;
+}
+
 export function EditPostForm({ post }: EditPostFormProps) {
-  const { isAuthenticated, isManager, isLoading, label } = useRole();
+  const { isAuthenticated, isManager, isLoading, label, session } = useRole();
   const router = useRouter();
+  const initialContent = decodeHtmlEntities(post.content);
 
   const [title, setTitle] = useState(post.title);
-  const [content, setContent] = useState(post.content);
+  const [content, setContent] = useState(initialContent);
   const [excerpt, setExcerpt] = useState(post.excerpt);
   const [category, setCategory] = useState(post.category);
   const [tags, setTags] = useState(post.tags.join(', '));
   const [coverImage, setCoverImage] = useState(post.coverImage);
   const [isPreview, setIsPreview] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const isOwner = (session?.user?.email ?? '').toLowerCase() === (post.author.email ?? '').toLowerCase();
+  const canEditPost = isManager || isOwner;
 
   if (isLoading) {
     return (
@@ -53,7 +87,7 @@ export function EditPostForm({ post }: EditPostFormProps) {
     );
   }
 
-  if (!isManager) {
+  if (!canEditPost) {
     return (
       <div className="min-h-screen pt-24 flex flex-col items-center justify-center text-center px-4">
         <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-2xl flex items-center justify-center mb-6">
@@ -64,27 +98,53 @@ export function EditPostForm({ post }: EditPostFormProps) {
           Your current role is <strong className="text-gray-900 dark:text-white">{label}</strong>.
         </p>
         <p className="text-gray-600 dark:text-gray-600 mb-6 max-w-md">
-          Only users with the <strong className="text-amber-600 dark:text-amber-400">Manager</strong> role can edit posts.
+          Only the original post author or a <strong className="text-amber-600 dark:text-amber-400">Manager</strong> can edit this post.
         </p>
         <Link href={`/blog/${post.slug}`} className="btn-secondary">Back to Post</Link>
       </div>
     );
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title || !content || !category) {
       toast.error('Please fill in all required fields.');
       return;
     }
-    setIsSaved(true);
-    toast.success('Post updated successfully! ✅');
-    // In a real app, this would call an API to persist the update
-    setTimeout(() => router.push(`/blog/${post.slug}`), 1500);
+
+    setIsSaving(true);
+    try {
+      const res = await fetch(`/api/posts/${post.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          content,
+          excerpt,
+          category,
+          tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
+          coverImage,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Failed to update post' }));
+        throw new Error(err.error || 'Failed to update post');
+      }
+
+      toast.success('Post updated successfully! ✅');
+      router.push(`/blog/${post.slug}`);
+      router.refresh();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to update post';
+      toast.error(message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const isDirty =
     title !== post.title ||
-    content !== post.content ||
+    content !== initialContent ||
     excerpt !== post.excerpt ||
     category !== post.category ||
     tags !== post.tags.join(', ') ||
@@ -132,11 +192,11 @@ export function EditPostForm({ post }: EditPostFormProps) {
             </button>
             <button
               onClick={handleSave}
-              disabled={isSaved}
+              disabled={isSaving || !isDirty}
               className="btn-primary text-sm disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {isSaved ? (
-                <><CheckCircle2 className="w-4 h-4" /> Saved</>
+              {isSaving ? (
+                <><CheckCircle2 className="w-4 h-4" /> Saving...</>
               ) : (
                 <><Save className="w-4 h-4" /> Save Changes</>
               )}
@@ -243,18 +303,13 @@ export function EditPostForm({ post }: EditPostFormProps) {
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 <PenSquare className="w-4 h-4" />
-                Content (Markdown) <span className="text-red-500">*</span>
+                Content <span className="text-red-500">*</span>
               </label>
-              <textarea
+              <TipTapEditor
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Write your blog post content in Markdown..."
-                rows={24}
-                className="input-field font-mono text-sm resize-y"
+                onChange={setContent}
+                placeholder="Update your blog post content..."
               />
-              <p className="text-xs text-gray-600 dark:text-gray-600 mt-2">
-                Supports Markdown: **bold**, *italic*, # headings, ```code blocks```, lists, and more.
-              </p>
             </div>
 
             {/* Post metadata (read-only) */}

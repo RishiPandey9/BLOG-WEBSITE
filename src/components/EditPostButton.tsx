@@ -6,12 +6,14 @@ import { useRole } from '@/hooks/useRole';
 
 interface EditPostButtonProps {
   slug: string;
+  authorEmail: string;
 }
 
-export function EditPostButton({ slug }: EditPostButtonProps) {
-  const { isManager } = useRole();
+export function EditPostButton({ slug, authorEmail }: EditPostButtonProps) {
+  const { isManager, session } = useRole();
+  const isOwner = (session?.user?.email ?? '').toLowerCase() === authorEmail.toLowerCase();
 
-  if (!isManager) return null;
+  if (!isManager && !isOwner) return null;
 
   return (
     <Link href={`/blog/${slug}/edit`} className="btn-ghost text-sm text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20">

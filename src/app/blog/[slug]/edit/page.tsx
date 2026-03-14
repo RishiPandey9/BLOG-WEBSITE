@@ -1,20 +1,22 @@
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import { posts } from '@/lib/data';
+import { getPostBySlugFromFirestore } from '@/lib/firestore';
 import { EditPostForm } from '@/components/EditPostForm';
 
 interface EditPostPageProps {
-  params: { slug: string };
+  params: { slug: string } | Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: EditPostPageProps): Promise<Metadata> {
-  const post = posts.find((p) => p.slug === params.slug);
+  const { slug } = await Promise.resolve(params);
+  const post = await getPostBySlugFromFirestore(slug);
   if (!post) return { title: 'Post Not Found' };
   return { title: `Edit: ${post.title}` };
 }
 
-export default function EditPostPage({ params }: EditPostPageProps) {
-  const post = posts.find((p) => p.slug === params.slug);
+export default async function EditPostPage({ params }: EditPostPageProps) {
+  const { slug } = await Promise.resolve(params);
+  const post = await getPostBySlugFromFirestore(slug);
 
   if (!post) {
     notFound();

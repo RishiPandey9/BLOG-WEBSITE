@@ -211,7 +211,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               <BookmarkButton postId={post.id} />
             </div>
             <div className="flex items-center flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
-              <EditPostButton slug={post.slug} />
+              <EditPostButton slug={post.slug} authorEmail={post.author?.email || ''} />
               <ShareButtons title={post.title} slug={post.slug} />
             </div>
           </div>

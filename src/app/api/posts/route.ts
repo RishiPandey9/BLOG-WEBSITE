@@ -14,6 +14,32 @@ import { getAdminDb } from '@/lib/firebase-admin';
 
 const allowFallback = process.env.NODE_ENV !== 'production';
 
+function decodeEscapedHtmlIfNeeded(content: string): string {
+  if (!content) return content;
+  const hasEscapedTags = /&(amp;)?lt;\/?[a-z]/i.test(content) || /&#x?0*3c;/i.test(content);
+  if (!hasEscapedTags) return content;
+
+  const decodeOnce = (value: string): string =>
+    value
+      .replace(/&amp;/gi, '&')
+      .replace(/&lt;/gi, '<')
+      .replace(/&gt;/gi, '>')
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;/gi, "'")
+      .replace(/&#x2F;/gi, '/')
+      .replace(/&#(\d+);/g, (_, code: string) => String.fromCharCode(Number(code)))
+      .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)));
+
+  let decoded = content;
+  for (let i = 0; i < 4; i += 1) {
+    const next = decodeOnce(decoded);
+    if (next === decoded) break;
+    decoded = next;
+  }
+
+  return decoded;
+}
+
 // ─── GET /api/posts ────────────────────────────────────────────────────────────
 // ?mine=true  → only the current user's posts
 // ?all=true   → all posts (manager only, includes pending/draft)
@@ -114,13 +140,14 @@ export async function POST(req: NextRequest) {
     : 'pending_review';
 
   const now = new Date().toISOString();
-  const words = content.split(/\s+/).length;
+  const normalizedContent = decodeEscapedHtmlIfNeeded(content);
+  const words = normalizedContent.split(/\s+/).length;
   const readingTime = Math.max(1, Math.round(words / 200));
 
   const postData: Omit<BlogPost, 'id'> = {
     slug: slug || title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-'),
     title,
-    content,
+    content: normalizedContent,
     excerpt: excerpt || title,
     coverImage: coverImage || 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&auto=format&fit=crop&q=60',
     category,

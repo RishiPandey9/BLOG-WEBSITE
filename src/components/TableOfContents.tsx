@@ -14,27 +14,81 @@ interface TableOfContentsProps {
   content: string;
 }
 
-function extractHeadings(markdown: string): HeadingEntry[] {
-  const lines = markdown.split('\n');
-  const entries: HeadingEntry[] = [];
-  for (const line of lines) {
-    const match = line.match(/^(#{1,3})\s+(.+)/);
-    if (match) {
-      const level = match[1].length;
-      const text = match[2].trim();
-      const id = text
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, '')
-        .replace(/\s+/g, '-');
-      entries.push({ id, text, level });
+function decodeHtmlEntities(input: string): string {
+  if (!input) return input;
+
+  const decodeOnce = (value: string): string => {
+    if (typeof window !== 'undefined') {
+      const textarea = document.createElement('textarea');
+      textarea.innerHTML = value;
+      return textarea.value;
     }
+
+    return value
+      .replace(/&amp;/gi, '&')
+      .replace(/&lt;/gi, '<')
+      .replace(/&gt;/gi, '>')
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;/gi, "'")
+      .replace(/&#x2F;/gi, '/')
+      .replace(/&#(\d+);/g, (_, code: string) => String.fromCharCode(Number(code)))
+      .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)));
+  };
+
+  let decoded = input;
+  for (let i = 0; i < 3; i += 1) {
+    const next = decodeOnce(decoded);
+    if (next === decoded) break;
+    decoded = next;
   }
+
+  return decoded;
+}
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .trim();
+}
+
+function stripTags(text: string): string {
+  return text.replace(/<[^>]*>/g, '').trim();
+}
+
+function extractHeadings(content: string): HeadingEntry[] {
+  const entries: HeadingEntry[] = [];
+
+  const markdownLines = content.split('\n');
+  for (const line of markdownLines) {
+    const match = line.match(/^(#{1,3})\s+(.+)/);
+    if (!match) continue;
+    const level = match[1].length;
+    const text = match[2].trim();
+    entries.push({ id: slugify(text), text, level });
+  }
+
+  if (entries.length > 0) {
+    return entries;
+  }
+
+  const htmlHeadingRegex = /<(h[1-3])[^>]*>([\s\S]*?)<\/\1>/gi;
+  let htmlMatch: RegExpExecArray | null;
+  while ((htmlMatch = htmlHeadingRegex.exec(content)) !== null) {
+    const level = Number(htmlMatch[1].replace('h', ''));
+    const text = stripTags(htmlMatch[2]);
+    if (!text) continue;
+    entries.push({ id: slugify(text), text, level });
+  }
+
   return entries;
 }
 
 export function TableOfContents({ content }: TableOfContentsProps) {
   const [activeId, setActiveId] = useState('');
-  const headings = extractHeadings(content);
+  const normalizedContent = decodeHtmlEntities(content);
+  const headings = extractHeadings(normalizedContent);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
