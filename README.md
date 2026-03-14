@@ -2,6 +2,17 @@
 
 A full-featured multi-author blogging platform built with Next.js 16 (App Router), TypeScript, NextAuth.js, Tailwind CSS, and Firebase. Anyone can write and submit posts; Managers review and publish them.
 
+## Recent Updates (March 2026)
+
+- Added and stabilized comprehensive API test suites for posts, comments, signup, and payment routes
+- Added component test suites for Navbar and PostCard interactions
+- Added integration user-flow tests with reusable test helpers
+- Updated Vitest config to resolve `@` alias correctly in test runtime
+- Added Firebase config files (`firebase.json`, `firestore.indexes.json`) for local/deploy consistency
+- Verified full quality gate after fixes:
+  - `npm run lint` passes
+  - `npm test -- --run` passes (`91/91` tests)
+
 ## Live Links
 
 - **Production App**: https://blog-website-rishi.vercel.app
@@ -315,3 +326,23 @@ Use these files together:
 2. Execute in phase order via `docs/testing/EXECUTION_BACKLOG.md`.
 3. Validate route/module/workflow scope from `docs/testing/COVERAGE_MATRIX.md`.
 4. Track progress and sign-off evidence in `docs/testing/EXECUTION_TRACKER.md`.
+
+### Run Tests
+
+```bash
+# Run all tests once
+npm test -- --run
+
+# Run coverage
+npm run test:coverage
+```
+
+### Firestore Indexes
+
+Firestore composite indexes used by this project are defined in:
+
+- `firestore.indexes.json`
+
+Firebase config references this index file via:
+
+- `firebase.json`
