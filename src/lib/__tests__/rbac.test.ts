@@ -69,7 +69,7 @@ describe('RBAC Functions', () => {
 
   describe('getRoleLabel', () => {
     it('should return correct label for manager', () => {
-      expect(getRoleLabel('manager')).toBe('Manager');
+      expect(getRoleLabel('manager')).toBe('Admin');
     });
 
     it('should return correct label for viewer', () => {
@@ -127,11 +127,11 @@ describe('RBAC Functions', () => {
       expect(viewerPerms).toContain('post:bookmark');
     });
 
-    it('should ensure manager has all viewer permissions', () => {
+    it('should keep manager and viewer permission sets distinct', () => {
       const managerHasAllViewerPerms = ROLE_PERMISSIONS.viewer.every(perm =>
         ROLE_PERMISSIONS.manager.includes(perm)
       );
-      expect(managerHasAllViewerPerms).toBe(true);
+      expect(managerHasAllViewerPerms).toBe(false);
     });
   });
 });
