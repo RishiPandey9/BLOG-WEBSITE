@@ -82,12 +82,13 @@ export async function PATCH(
 
   const updateData: Partial<BlogPost> = managerUser
     ? { ...body }
-    : OWNER_EDITABLE_FIELDS.reduce<Partial<BlogPost>>((acc, key) => {
+    : OWNER_EDITABLE_FIELDS.reduce((acc, key) => {
         if (body[key] !== undefined) {
-          acc[key] = body[key];
+          // Use type assertion to properly assign the value
+          acc[key] = body[key] as any;
         }
         return acc;
-      }, {});
+      }, {} as Partial<BlogPost>);
 
   delete updateData.id;
 
